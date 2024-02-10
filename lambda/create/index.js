@@ -20,7 +20,6 @@ exports.handler = (event, context, callback) => {
     const username = event.requestContext.authorizer.claims['cognito:username'];
     const requestBody = JSON.parse(event.body);
 
-
     createContract(userId, contractId, username, requestBody).then(() => {
         callback(null, {
             statusCode: 201,
@@ -39,7 +38,6 @@ exports.handler = (event, context, callback) => {
         errorResponse(err.message, context.awsRequestId, callback)
     });
 };
-
 
 function createContract(userId, contractId, username, contract) {
     return ddb.put({
