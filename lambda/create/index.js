@@ -1,27 +1,34 @@
+// Ensure you have these dependencies installed in your package.json:
+// "dependencies": {
+//   "aws-sdk": "^2.1000.0",
+//   "crypto": "^1.0.0",
+//   "aws-sdk": "^2.1000.0"
+// }
+
 const { randomUUID } = require('crypto');
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 
-exports.handler = (event, context, callback) => {
+exports.handler = async (event, context) => {
+    try {
+        if (!event.requestContext.authorizer) {
+            return errorResponse('Authorization not configured', context.awsRequestId);
+        }
 
-    if (!event.requestContext.authorizer) {
-      errorResponse('Authorization not configured', context.awsRequestId, callback);
-      return;
-    }
-    
-    const userId = event.requestContext.authorizer.claims['sub'];
-    const contractId = randomUUID();
+        const userId = event.requestContext.authorizer.claims['sub'];
+        const contractId = randomUUID();
 
-    console.log('Received context', context);
-    console.log('Received event', event);
-    console.log('Received contractId', contractId);
-    console.log('Received userId', userId);
+        console.log('Received context', context);
+        console.log('Received event', event);
+        console.log('Received contractId', contractId);
+        console.log('Received userId', userId);
 
-    const username = event.requestContext.authorizer.claims['cognito:username'];
-    const requestBody = JSON.parse(event.body);
+        const username = event.requestContext.authorizer.claims['cognito:username'];
+        const requestBody = JSON.parse(event.body);
 
-    createContract(userId, contractId, username, requestBody).then(() => {
-        callback(null, {
+        await createContract(userId, contractId, username, requestBody);
+
+        return {
             statusCode: 201,
             body: JSON.stringify({
                 ContractId: contractId,
@@ -32,16 +39,17 @@ exports.handler = (event, context, callback) => {
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },
-        });
-    }).catch((err) => {
-        console.error(err);
-        errorResponse(err.message, context.awsRequestId, callback)
-    });
+        };
+    } catch (error) {
+        console.error(error);
+        return errorResponse(error.message, context.awsRequestId);
+    }
 };
 
-function createContract(userId, contractId, username, contract) {
-    return ddb.put({
-        TableName: 'contracts',
+async function createContract(userId, contractId, username, contract) {
+    console.log('Received ddb', ddb);
+    await ddb.put({
+        TableName: 'contract',
         Item: {
             userId: userId,
             contractId: contractId,
@@ -52,15 +60,15 @@ function createContract(userId, contractId, username, contract) {
     }).promise();
 }
 
-function errorResponse(errorMessage, awsRequestId, callback) {
-  callback(null, {
-    statusCode: 500,
-    body: JSON.stringify({
-      Error: errorMessage,
-      Reference: awsRequestId,
-    }),
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
+function errorResponse(errorMessage, awsRequestId) {
+    return {
+        statusCode: 500,
+        body: JSON.stringify({
+            Error: errorMessage,
+            Reference: awsRequestId,
+        }),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
+    };
 }
