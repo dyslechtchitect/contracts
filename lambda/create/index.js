@@ -26,8 +26,10 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({
                 ContractId: contractId,
                 Contract: requestBody,
-                Eta: '30 seconds',
-                Rider: username,
+                userId: userId,
+                username: username,
+                createdDate: new Date().toISOString(),
+                updatedDate: new Date().toISOString(),
             }),
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -39,12 +41,13 @@ exports.handler = async (event, context) => {
     }
 };
 
-async function createContract(userId, contractId, title, body) {
+async function createContract(userId, contractId, username, body) {
     await ddb.put({
         TableName: 'contract',
         Item: {
             id: contractId,
-            title: title,
+            userId: userId,
+            username: username,
             body: body,
             createdDate: new Date().toISOString(),
             updatedDate: new Date().toISOString(),
