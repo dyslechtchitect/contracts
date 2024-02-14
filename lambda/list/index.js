@@ -72,14 +72,16 @@ function fetchContract(userId, contractId) {
 }
 
 function listUnicorns(userId) {
-   const queryParams = {
-        TableName: 'contract',
-        KeyConditionExpression: `userId = :id`,
-        ExpressionAttributeValues: {
-            ':id': userId,
-        },
-    };
-    const response = ddb.query(queryParams)
+
+const params = {
+    TableName: 'contracts_to_users',
+    IndexName: 'userId-contractId-index', 
+    KeyConditionExpression: 'userId = :userId',
+    ExpressionAttributeValues: {
+        ':userId': userId
+    }
+};
+    const contracts = ddb.query(params)
     console.log(response.toString)
   
     return response.promise();
