@@ -82,9 +82,9 @@ const params = {
     }
 };
     const contracts = ddb.query(params)
-    console.log(response.toString)
+    console.log(contracts.toString)
   
-    return response.promise();
+    return contracts.promise();
 }
 
 
