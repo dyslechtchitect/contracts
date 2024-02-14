@@ -63,7 +63,7 @@ exports.handler = (event, context, callback) => {
 
 function fetchContract(userId, contractId) {
     return ddb.get({
-        TableName: 'contracts',
+        TableName: 'contract',
         Key: {
             userId: userId,
             contractId: contractId
@@ -73,7 +73,7 @@ function fetchContract(userId, contractId) {
 
 function listUnicorns(userId) {
    const queryParams = {
-        TableName: 'contracts',
+        TableName: 'contract',
         KeyConditionExpression: `userId = :id`,
         ExpressionAttributeValues: {
             ':id': userId,
