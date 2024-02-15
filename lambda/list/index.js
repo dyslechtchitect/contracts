@@ -1,5 +1,9 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
+<<<<<<< HEAD
+=======
+const fetchContract = require('../common/fetch-contract.js')
+>>>>>>> parent of 95a6556 (prbblu)
 
 exports.handler = (event, context, callback) => {
 
