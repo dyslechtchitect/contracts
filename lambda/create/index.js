@@ -76,7 +76,7 @@ async function createContract(userId, contractId, username, body) {
         ]
     };
 
-    await ddb.put(transactionItems).promise();
+    await ddb.transactWrite(transactionItems).promise();
 }
 
 function errorResponse(errorMessage, awsRequestId) {
