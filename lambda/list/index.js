@@ -1,6 +1,10 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+const fetchContract = require('../common/fetch-contract.js')
+>>>>>>> parent of 95a6556 (prbblu)
 =======
 const fetchContract = require('../common/fetch-contract.js')
 >>>>>>> parent of 95a6556 (prbblu)
