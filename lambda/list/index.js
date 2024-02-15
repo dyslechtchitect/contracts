@@ -1,7 +1,7 @@
 const randomBytes = require('crypto').randomBytes;
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
-const fetchContract = require('../common/fetch-contract')
+const fetchContract = require('../common/fetch-contract.js')
 
 exports.handler = (event, context, callback) => {
 
