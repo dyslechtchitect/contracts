@@ -54,7 +54,7 @@ async function createContract(userId, contractId, username, body) {
         },
     }
 
-    const cotractsToUsersItem = {
+    const contractsToUsersItem = {
         TableName: 'contracts_to_users',
         Item: {
             id: contractId,
