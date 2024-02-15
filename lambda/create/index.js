@@ -42,7 +42,7 @@ exports.handler = async (event, context) => {
 };
 
 async function createContract(userId, contractId, username, body) {
-    await ddb.put({
+    const contractItem = {
         TableName: 'contract',
         Item: {
             id: contractId,
@@ -52,7 +52,31 @@ async function createContract(userId, contractId, username, body) {
             createdDate: new Date().toISOString(),
             updatedDate: new Date().toISOString(),
         },
-    }).promise();
+    }
+
+    const cotractsToUsersItem = {
+        TableName: 'contracts_to_users',
+        Item: {
+            id: contractId,
+            userId: userId,
+            isCreator: true,
+            isEditor: true,
+            isParty: false
+        },
+    }
+
+    const transactionItems = {
+        TransactItems: [
+            {
+                Put: contractItem
+            },
+            {
+                Put: contractsToUsersItem
+            }
+        ]
+    };
+
+    await ddb.put(transactionItems).promise();
 }
 
 function errorResponse(errorMessage, awsRequestId) {
