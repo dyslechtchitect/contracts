@@ -1,7 +1,6 @@
 const randomBytes = require('crypto').randomBytes;
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
-const fetchContract = require('../common/fetch-contract.js').fetchContract
 
 exports.handler = (event, context, callback) => {
 
@@ -60,6 +59,15 @@ exports.handler = (event, context, callback) => {
     }
 };
 
+function fetchContract(userId, contractId) {
+    return ddb.get({
+        TableName: 'contracts',
+        Key: {
+            id: contractId,
+            userId: userId
+        },
+    }).promise();
+};
 
 function listUnicorns(userId) {
 
