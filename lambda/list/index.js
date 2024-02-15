@@ -65,8 +65,8 @@ function fetchContract(userId, contractId) {
     return ddb.get({
         TableName: 'contract',
         Key: {
-            userId: userId,
-            contractId: contractId
+            id: contractId,
+            userId: userId
         },
     }).promise();
 }
