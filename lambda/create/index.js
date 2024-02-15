@@ -43,7 +43,7 @@ exports.handler = async (event, context) => {
 
 async function createContract(userId, contractId, username, body) {
     const contractItem = {
-        TableName: 'contract',
+        TableName: 'contracts',
         Item: {
             id: contractId,
             userId: userId,

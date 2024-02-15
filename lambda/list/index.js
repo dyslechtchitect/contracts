@@ -63,7 +63,7 @@ exports.handler = (event, context, callback) => {
 
 function fetchContract(userId, contractId) {
     return ddb.get({
-        TableName: 'contract',
+        TableName: 'contracts',
         Key: {
             id: contractId,
             userId: userId
