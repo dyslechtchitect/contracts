@@ -1,20 +1,17 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
-const foo = require('../test.js').foo;
+
+
 exports.handler = (event, context, callback) => {
-    foo(); // this may not work
+
     if (!event.requestContext.authorizer) {
       errorResponse('Authorization not configured', context.awsRequestId, callback);
       return;
     };
 
-    
     const userId = event.requestContext.authorizer.claims?.sub;
     const contractId = event.queryStringParameters?.contractId ?? event.pathParameters?.contractId ;
     
-
-    console.log('Received contractId', contractId);
-    console.log('Received userId', userId);
     if (!!contractId) {
     fetchContract(userId, contractId).then((result, error) => {
         callback(null, {
