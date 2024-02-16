@@ -25,7 +25,7 @@ exports.handler = async (event, context) => {
         };
 
         if (!contract?.isCreator) {
-            return errorResponse('you cannot share a contract unless you own it', context.awsRequestId);
+            return errorResponse('you cannot share a contract unless you own it', contract);
         };
 
         await shareContract(sharedWithUserId, contractId);
