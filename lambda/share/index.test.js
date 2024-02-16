@@ -1,6 +1,7 @@
 const AWSMOCK = require("aws-sdk");
 
 const { handler } = require('./index.js');
+const { randomUUID } = require("crypto");
 
 
 let mockDocumentClient = {
@@ -21,7 +22,12 @@ jest.mock("aws-sdk", () => {
   };
 });
 
-test('should create contract in db returning 201 status code ', async () => {
+test('fail when a user shares a contract with themselves', async () => {
+  const userId = randomUUID();
+  const body = {
+    sharedWithUserId: userId,
+    contractId: randomUUID()
+  }
   const event = {
     path: '/contract',
     httpMethod: 'POST',
@@ -36,11 +42,11 @@ test('should create contract in db returning 201 status code ', async () => {
       authorizer: {
         claims: {
           'cognito:username': 'the_username',
-          sub: 'the_user_id',
+          sub: userId,
         },
       },
     },
-    body: JSON.stringify({ foo: 'bar' }),
+    body: JSON.stringify(body),
   };
 
   const context = { awsRequestId: 'awsRequestId' };
@@ -49,11 +55,6 @@ test('should create contract in db returning 201 status code ', async () => {
   const result = await handler(event, context);
 
   // Assertions
-  expect(result.statusCode).toBe(201);
-  expect(JSON.parse(result.body)).toEqual({
-    ContractId: expect.any(String), // ContractId is generated randomly
-    Contract: { foo: 'bar' },
-    Eta: '30 seconds',
-    Rider: 'the_username',
-  });
+  expect(result.statusCode).toBe(403);
+ 
 });

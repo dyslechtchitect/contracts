@@ -1,4 +1,3 @@
-const { randomUUID } = require('crypto');
 const AWS  = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 
@@ -9,29 +8,29 @@ exports.handler = async (event, context) => {
         }
 
         
+        const requestBody = JSON.parse(event.body);
+        const ownerUserId = event.requestContext.authorizer.claims['sub'];
+        const sharedWithUserId = requestBody.sharedWithUserId;
+        const contractId = requestBody.contractId;
+        console.log(`xxx ${ownerUserId}, ${sharedWithUserId}` )
 
-        const userId = event.requestContext.authorizer.claims['sub'];
-        const contractId = event.queryStringParameters?.contractId ?? event.pathParameters?.contractId;
-        
-        if (userid == contractId) {
+        if (ownerUserId == sharedWithUserId) {
             return errorResponse('you cannot share a contract with yourself duh', context.awsRequestId);
         }
 
-        console.log('Received context', context);
-        console.log('Received event', event);
-        console.log('Received contractId', contractId);
-        console.log('Received userId', userId);
+        const contract = await fetchContracts(ownerUserId, contractId)
 
-        const username = event.requestContext.authorizer.claims['cognito:username'];
-        const requestBody = JSON.parse(event.body);
+        if (!!contract || !contract?.isCreator) {
+            return errorResponse('you cannot share a contract unless you own it', context.awsRequestId);
+        }
 
-        await shareContract(userId, contractId);
+        await shareContract(sharedWithUserId, contractId);
 
         return {
             statusCode: 201,
             body: JSON.stringify({
                 contractId: contractId,
-                userId: userId,
+                sharedWithUserId: sharedWithUserId,
             }),
             headers: {
                 'Access-Control-Allow-Origin': '*',
@@ -43,25 +42,34 @@ exports.handler = async (event, context) => {
     }
 };
 
-async function shareContract(userId, contractId) {
-    const share = {
+async function fetchContracts(userId, contractId) {
+    return ddb.get({
+        TableName: 'contracts',
+        Key: {
+            id: contractId,
+            userId: userId
+        },
+    }).promise();
+};
+
+async function shareContract(sharedWithUserId, contractId) {
+    const contractsToUsersItem = {
         TableName: 'contracts_to_users',
         Item: {
-            'id': contractId,
-            'userId': userId,
-            'isCreator': false,
-            'isEditor': false,
-            'isParty': true
-        },
-        ConditionExpression: 'attribute_exists(id)'
+            contractId: contractId,
+            userId: sharedWithUserId,
+            isCreator: false,
+            isEditor: false,
+            isParty: true
+        }
     }
-
-    await ddb.put(share).promise();
+   
+    await ddb.put(contractsToUsersItem).promise();
 }
 
 function errorResponse(errorMessage, awsRequestId) {
     return {
-        statusCode: 500,
+        statusCode: 403,
         body: JSON.stringify({
             Error: errorMessage,
             Reference: awsRequestId,
