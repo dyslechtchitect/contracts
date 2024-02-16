@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
 
         const contract = await fetchContracts(ownerUserId, contractId)
 
-        if (!!contract) {
+        if (contract == undefined) {
             return errorResponse('contract does not exist', context.awsRequestId);
         };
 
