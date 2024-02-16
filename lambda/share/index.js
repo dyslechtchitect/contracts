@@ -16,13 +16,17 @@ exports.handler = async (event, context) => {
 
         if (ownerUserId == sharedWithUserId) {
             return errorResponse('you cannot share a contract with yourself duh', context.awsRequestId);
-        }
+        };
 
         const contract = await fetchContracts(ownerUserId, contractId)
 
-        if (!!contract || !contract?.isCreator) {
+        if (!!contract) {
+            return errorResponse('contract does not exist', context.awsRequestId);
+        };
+
+        if (!contract?.isCreator) {
             return errorResponse('you cannot share a contract unless you own it', context.awsRequestId);
-        }
+        };
 
         await shareContract(sharedWithUserId, contractId);
 
