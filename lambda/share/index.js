@@ -24,7 +24,7 @@ exports.handler = async (event, context) => {
             return errorResponse('contract does not exist', context.awsRequestId);
         };
 
-        if (!contract?.isCreator) {
+        if (!contract?.Item?.isCreator) {
             return errorResponse('you cannot share a contract unless you own it', contract);
         };
 
