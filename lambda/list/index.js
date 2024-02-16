@@ -1,37 +1,18 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-const fetchContract = require('../common/fetch-contract.js')
->>>>>>> parent of 95a6556 (prbblu)
-=======
-const fetchContract = require('../common/fetch-contract.js')
->>>>>>> parent of 95a6556 (prbblu)
-=======
-const fetchContract = require('../common/fetch-contract.js')
->>>>>>> parent of 95a6556 (prbblu)
 
 exports.handler = (event, context, callback) => {
 
     if (!event.requestContext.authorizer) {
       errorResponse('Authorization not configured', context.awsRequestId, callback);
       return;
-    }
-    
-    console.log('Received path params', event.pathParameters);
-    console.log('Received query params', event.queryStringParameters);
-    console.log('Received context', context);
-    console.log('Received event', event);
+    };
+
     
     const userId = event.requestContext.authorizer.claims?.sub;
-    const path = event.path;
-
     const contractId = event.queryStringParameters?.contractId ?? event.pathParameters?.contractId ;
     
 
-    const username = event.requestContext.authorizer.claims['cognito:username'];
     console.log('Received contractId', contractId);
     console.log('Received userId', userId);
     if (!!contractId) {
@@ -94,7 +75,7 @@ const params = {
     console.log(contracts.toString)
   
     return contracts.promise();
-}
+};
 
 
 function errorResponse(errorMessage, awsRequestId, callback) {
