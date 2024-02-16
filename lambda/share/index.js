@@ -48,9 +48,9 @@ exports.handler = async (event, context) => {
 
 async function fetchContracts(userId, contractId) {
     return ddb.get({
-        TableName: 'contracts',
+        TableName: 'contracts_to_users',
         Key: {
-            id: contractId,
+            contractId: contractId,
             userId: userId
         },
     }).promise();
