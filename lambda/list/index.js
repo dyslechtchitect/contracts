@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 const ddb = new AWS.DynamoDB.DocumentClient();
 
-
 exports.handler = (event, context, callback) => {
 
     if (!event.requestContext.authorizer) {
