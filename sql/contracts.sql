@@ -15,11 +15,12 @@ CREATE TABLE `contracts` (
 
 CREATE TABLE `users` (
   `id` varbinary(16) NOT NULL,
-  `userId` varbinary(16) NOT NULL,
   `date_updated` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `date_created` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `data` json DEFAULT NULL,
+  `identity_provider` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
+  UNIQUE KEY `users_unique` (`id`,`identity_provider`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 
