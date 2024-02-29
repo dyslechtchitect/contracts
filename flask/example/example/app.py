@@ -2,7 +2,7 @@ from os import environ, path, urandom
 import jwt
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, session, url_for, request
-
+import boto3
 from flask_cognito_lib import CognitoAuth
 from flask_cognito_lib.decorators import (
     auth_required,
@@ -43,7 +43,7 @@ class Config:
 app = Flask(__name__)
 app.config.from_object(Config)
 auth = CognitoAuth(app)
-
+boto_client = boto3.client('cognito-idp', Config.AWS_REGION)
 
 @app.route("/")
 def home():
@@ -95,11 +95,10 @@ def claims():
     print("XXX")
     accessToken = request.cookies['cognito_access_token']
     print(accessToken)
-    decodedAccessToken = jwt.decode(accessToken, algorithms=["HS256"], options={"verify_signature": False})
     print("YYY")
-    print(decodedAccessToken)
-    # return jsonify(session.)
-    return jsonify({"claims": session["claims"]})
+
+    user_data = boto_client.admin_get_user(UserPoolId = Config.AWS_COGNITO_USER_POOL_ID, Username =  "Ron")
+    return jsonify({"claims": session["claims"], "userData": user_data})
 
 
 @app.errorhandler(AuthorisationRequiredError)
