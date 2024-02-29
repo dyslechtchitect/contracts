@@ -91,14 +91,13 @@ def claims():
     # If their auth is valid, the current session will be shown including
     # their claims and user_info extracted from the Cognito tokens.
     # print("lll")
-    print(session)
-    print("XXX")
-    accessToken = request.cookies['cognito_access_token']
-    print(accessToken)
-    print("YYY")
-
-    user_data = boto_client.admin_get_user(UserPoolId = Config.AWS_COGNITO_USER_POOL_ID, Username =  "Ron")
-    return jsonify({"claims": session["claims"], "userData": user_data})
+    raw_accessToken = request.cookies['cognito_access_token']
+    raw_claims = session["claims"]
+    user_name = raw_claims['username']
+    user_data = boto_client.admin_get_user(UserPoolId = Config.AWS_COGNITO_USER_POOL_ID,
+                                           Username = user_name)
+    return jsonify({"claims": raw_claims,
+                    "userData": user_data})
 
 
 @app.errorhandler(AuthorisationRequiredError)
