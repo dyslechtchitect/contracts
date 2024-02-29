@@ -1,7 +1,7 @@
 from os import environ, path, urandom
-
+import jwt
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, session, url_for
+from flask import Flask, jsonify, redirect, session, url_for, request
 
 from flask_cognito_lib import CognitoAuth
 from flask_cognito_lib.decorators import (
@@ -76,6 +76,8 @@ def postlogin():
     # Do anything after the user has logged in here, e.g. a redirect or perform
     # logic based on a custom `session['state']` value if that was set before
     # login
+    # print("xxx")
+    # print(request.cookies['x-access-token'])
     return redirect(url_for("claims"))
 
 
@@ -90,8 +92,14 @@ def claims():
     # their claims and user_info extracted from the Cognito tokens.
     # print("lll")
     print(session)
+    print("XXX")
+    accessToken = request.cookies['cognito_access_token']
+    print(accessToken)
+    decodedAccessToken = jwt.decode(accessToken, algorithms=["HS256"], options={"verify_signature": False})
+    print("YYY")
+    print(decodedAccessToken)
     # return jsonify(session.)
-    return jsonify({"foo" :session["claims"]})
+    return jsonify({"claims": session["claims"]})
 
 
 @app.errorhandler(AuthorisationRequiredError)
