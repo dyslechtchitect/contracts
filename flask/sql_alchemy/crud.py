@@ -1,18 +1,15 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 import uuid
-
+from datetime import datetime
 from custom_types.guid import UUID
 from models import User, Base
 
-
-# engine = create_engine("sqlite://", echo=True)
-engine = create_engine('sqlite:///db.db') # connect to server
-# with engine.connect() as conn:
-#     conn.execute("CREATE DATABASE contracts") #create db
-#     conn.execute("USE contracts")
+engine = create_engine('sqlite:///db.db')  # connect to server
 
 Base.metadata.create_all(engine)
+
+
 class CRUD:
     def __init__(self, engine, session: Session):
         self.engine = engine
@@ -26,14 +23,18 @@ class CRUD:
         query = select(User).where(User.id == user_id)
         return self.session.scalars(query).one()
 
+
 with Session(engine) as session:
     user = User(
-        id = uuid.uuid4().bytes,
-        name = "ron",
-        email = "ron.neuman@gmail.com",
-        data = {"foo": "bar"})
+        id=uuid.uuid4().bytes,
+        name="ron",
+        email="ron.neuman@gmail.com",
+        data={"foo": "bar"},
+        date_created=datetime.now(),
+        date_updated=datetime.now()
+    )
 
     crud = CRUD(engine, session)
     crud.create_user(user)
     ret = crud.get_user(user.id)
-    print(ret)
+    print(ret.__repr__)

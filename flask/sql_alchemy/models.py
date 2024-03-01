@@ -10,11 +10,13 @@ from sqlalchemy.dialects.mysql import BINARY
 from sqlalchemy.types import TypeDecorator
 from custom_types.guid import UUID
 from typing import Any
-
+from datetime import datetime
+from flask import jsonify
 from sqlalchemy.types import JSON
 from sqlalchemy import create_engine
-
-class Base(DeclarativeBase):
+from sqlalchemy_serializer import SerializerMixin
+import json
+class Base(DeclarativeBase, SerializerMixin):
     type_annotation_map = {
         dict[str, Any]: JSON
     }
@@ -39,17 +41,25 @@ class User(Base):
         back_populates="users",
         secondary=users_to_contracts
     )
+    date_created: Mapped[datetime]
+    date_updated: Mapped[datetime]
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r}, data={self.data})"
+        return json.dumps(self.to_dict())
 
 class Contract(Base):
     __tablename__ = "contract"
     id = Column(UUID(), primary_key=True)
+
     data: Mapped[dict[str, Any]]
     users: Mapped[List["User"]] = relationship(
         back_populates="contracts",
         secondary=users_to_contracts
     )
+
+    date_created: Mapped[datetime]
+    date_updated: Mapped[datetime]
+    date_signed: Mapped[datetime]
+    date_expires: Mapped[datetime]
     def __repr__(self) -> str:
-        return f"Contract(id={self.id!r}, data={self.data!r})"
+        return json.dumps(self.to_dict())
 
