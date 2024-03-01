@@ -1,8 +1,8 @@
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey, Column
+from sqlalchemy import ForeignKey, Column,Table
 from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
@@ -19,24 +19,36 @@ class Base(DeclarativeBase):
         dict[str, Any]: JSON
     }
 
+users_to_contracts = Table(
+    'users_to_contracts',
+    Base.metadata,
+    Column('user_id', UUID(), ForeignKey('user.id')),
+    Column('contract_id', UUID(), ForeignKey('contract.id')),
+)
+
 class User(Base):
     __tablename__ = "user"
     id = Column(UUID(), primary_key=True)
     name: Mapped[Optional[str]]
     email: Mapped[Optional[str]]
     data: Mapped[dict[str, Any]]
-    addresses: Mapped[List["Address"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
+    contracts: Mapped[List["Contract"]] = relationship(
+        back_populates="contract",
+        secondary=users_to_contracts,
+        cascade="all, delete-orphan"
     )
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r}, data={self.data})"
 
-class Address(Base):
-    __tablename__ = "address"
+class Contract(Base):
+    __tablename__ = "contract"
     id = Column(UUID(), primary_key=True)
-    email_address: Mapped[str]
-    user_id = Column(UUID(), ForeignKey("user.id"))
-    user: Mapped["User"] = relationship(back_populates="addresses")
+    data: Mapped[dict[str, Any]]
+    users: Mapped[List["User"]] = relationship(
+        back_populates="user",
+        secondary=users_to_contracts,
+        cascade="all, delete-orphan"
+    )
     def __repr__(self) -> str:
-        return f"Address(id={self.id!r}, email_address={self.email_address!r})"
+        return f"Contract(id={self.id!r}, data={self.data!r})"
 
