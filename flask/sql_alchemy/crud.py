@@ -6,7 +6,12 @@ from custom_types.guid import UUID
 from models import User, Base
 
 
-engine = create_engine("sqlite://", echo=True)
+# engine = create_engine("sqlite://", echo=True)
+engine = create_engine('sqlite:///db.db') # connect to server
+# with engine.connect() as conn:
+#     conn.execute("CREATE DATABASE contracts") #create db
+#     conn.execute("USE contracts")
+
 Base.metadata.create_all(engine)
 class CRUD:
     def __init__(self, engine, session: Session):
