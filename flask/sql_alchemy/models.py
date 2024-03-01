@@ -22,8 +22,8 @@ class Base(DeclarativeBase):
 users_to_contracts = Table(
     'users_to_contracts',
     Base.metadata,
-    Column('user_id', UUID(), ForeignKey('user.id')),
-    Column('contract_id', UUID(), ForeignKey('contract.id')),
+    Column('user_id', UUID(), ForeignKey('user.id'), primary_key=True),
+    Column('contract_id', UUID(), ForeignKey('contract.id'), primary_key=True),
 )
 
 class User(Base):
@@ -33,9 +33,8 @@ class User(Base):
     email: Mapped[Optional[str]]
     data: Mapped[dict[str, Any]]
     contracts: Mapped[List["Contract"]] = relationship(
-        back_populates="contract",
-        secondary=users_to_contracts,
-        cascade="all, delete-orphan"
+        back_populates="users",
+        secondary=users_to_contracts
     )
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r}, data={self.data})"
@@ -45,9 +44,8 @@ class Contract(Base):
     id = Column(UUID(), primary_key=True)
     data: Mapped[dict[str, Any]]
     users: Mapped[List["User"]] = relationship(
-        back_populates="user",
-        secondary=users_to_contracts,
-        cascade="all, delete-orphan"
+        back_populates="contracts",
+        secondary=users_to_contracts
     )
     def __repr__(self) -> str:
         return f"Contract(id={self.id!r}, data={self.data!r})"
