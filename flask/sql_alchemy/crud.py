@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, Boolean
 from sqlalchemy.orm import Session
 import uuid
 from datetime import datetime
@@ -19,14 +19,26 @@ class CRUD:
         self.session.add(user)
         self.session.commit()
 
+
     def get_user(self, user_id: UUID()):
         query = select(User).where(User.id == user_id)
         return self.session.scalars(query).one()
 
-    def create_contract(self, contract: Contract):
+    def create_contract(self,
+                        user: User,
+                        contract: Contract,
+                        is_creator: Boolean,
+                        is_editor: Boolean,
+                        is_party: Boolean):
+        users_to_contracts = UsersToContracts(is_creator=is_creator,
+                                              is_party=is_party,
+                                              is_editor=is_editor)
+        users_to_contracts.contract = contract
+        user.contracts.append(users_to_contracts)
+
+    def create_contract_without_user(self, contract: Contract):
         self.session.add(contract)
         self.session.commit()
-
 
 with Session(engine) as session:
     user = User(
@@ -37,7 +49,7 @@ with Session(engine) as session:
         date_created=datetime.now(),
         date_updated=datetime.now()
     )
-    users_to_contracts = UsersToContracts(is_creator=True, is_party=False, is_editor=False)
+
     contract = Contract(id=uuid.uuid4().bytes,
                         data={"contract": ["foo"]},
                         date_created=datetime.now(),
@@ -56,9 +68,7 @@ with Session(engine) as session:
     crud = CRUD(engine, session)
     crud.create_user(user)
 
-    users_to_contracts.contract = contract
-    user.contracts.append(users_to_contracts)
-    session.commit()
+    crud.create_contract(user, contract, True, False, False)
     ret = crud.get_user(user.id)
     print(ret)
-    crud.create_contract(another_contract) # checking if i can create a contract on it's own
+    crud.create_contract_without_user(another_contract) # checking if i can create a contract on it's own
