@@ -37,4 +37,4 @@ with Session(engine) as session:
     crud = CRUD(engine, session)
     crud.create_user(user)
     ret = crud.get_user(user.id)
-    print(ret.__repr__)
+    print(ret)

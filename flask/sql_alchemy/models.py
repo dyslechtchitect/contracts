@@ -16,6 +16,7 @@ from sqlalchemy.types import JSON
 from sqlalchemy import create_engine
 from sqlalchemy_serializer import SerializerMixin
 import json
+
 class Base(DeclarativeBase, SerializerMixin):
     type_annotation_map = {
         dict[str, Any]: JSON
