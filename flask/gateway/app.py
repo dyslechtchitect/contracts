@@ -59,7 +59,7 @@ def login():
     # An optional "state" value can be set in the current session which will
     # be passed and then used in the postlogin route (after the user has logged
     # into the Cognito hosted UI); this could be used for dynamic redirects,
-    # for example, set `session['state'] = "some_custom_value"` before passing
+    # for gateway, set `session['state'] = "some_custom_value"` before passing
     # the user to this route
     pass
 
