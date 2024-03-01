@@ -1,6 +1,6 @@
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey, Column,Table
+from sqlalchemy import ForeignKey, Column,Table, Boolean
 from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
@@ -24,6 +24,9 @@ users_to_contracts = Table(
     Base.metadata,
     Column('user_id', UUID(), ForeignKey('user.id'), primary_key=True),
     Column('contract_id', UUID(), ForeignKey('contract.id'), primary_key=True),
+    Column('is_creator', Boolean),
+    Column('is_editor', Boolean),
+    Column('is_party', Boolean)
 )
 
 class User(Base):
