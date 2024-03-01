@@ -44,7 +44,15 @@ class User(Base):
     date_updated: Mapped[datetime]
 
     def __repr__(self) -> str:
-        return f"""{self.id}"""
+        return json.dumps({
+            "id": str(self.id),
+            "name": self.name,
+            "email": self.email,
+            "data": self.data,
+            "date_created": str(self.date_created),
+            "date_updated": str(self.date_updated)
+        }
+        )
 
 
 class Contract(Base):
@@ -63,4 +71,10 @@ class Contract(Base):
     def __repr__(self) -> str:
         return json.dumps({
             "id": str(self.id),
-            "data": self.data})
+            "data": self.data,
+            "date_created": str(self.date_created),
+            "date_updated": str(self.date_updated),
+            "date_signed": str(self.date_signed),
+            "date_expires": str(self.date_expires)
+        }
+        )
