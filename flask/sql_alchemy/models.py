@@ -29,7 +29,7 @@ class User(Base):
         back_populates="user", cascade="all, delete-orphan"
     )
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r})"
+        return f"User(id={self.id!r}, name={self.name!r}, email={self.email!r}, data={self.data})"
 
 class Address(Base):
     __tablename__ = "address"
