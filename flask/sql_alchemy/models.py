@@ -22,6 +22,7 @@ class Base(DeclarativeBase, SerializerMixin):
         dict[str, Any]: JSON
     }
 
+
 users_to_contracts = Table(
     'users_to_contracts',
     Base.metadata,
@@ -45,12 +46,11 @@ class User(Base):
     date_created: Mapped[datetime]
     date_updated: Mapped[datetime]
     def __repr__(self) -> str:
-        return json.dumps(self.to_dict())
+        return f"""{self.id}"""
 
 class Contract(Base):
     __tablename__ = "contract"
     id = Column(UUID(), primary_key=True)
-
     data: Mapped[dict[str, Any]]
     users: Mapped[List["User"]] = relationship(
         back_populates="contracts",
@@ -62,5 +62,5 @@ class Contract(Base):
     date_signed: Mapped[datetime]
     date_expires: Mapped[datetime]
     def __repr__(self) -> str:
-        return json.dumps(self.to_dict())
+        return f"""{self.id}"""
 
