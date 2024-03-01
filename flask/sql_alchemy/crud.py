@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 import uuid
 from datetime import datetime
 from custom_types.guid import UUID
-from models import User, Base, Contract
+from models import User, Base, Contract, UsersToContracts
 
 engine = create_engine('sqlite:///db.db')  # connect to server
 
@@ -37,9 +37,9 @@ with Session(engine) as session:
         date_created=datetime.now(),
         date_updated=datetime.now()
     )
-
+    users_to_contracts = UsersToContracts(is_creator=True, is_party=False, is_editor=False)
     contract = Contract(id=uuid.uuid4().bytes,
-                        data = {"contract": ["foo"]},
+                        data={"contract": ["foo"]},
                         date_created=datetime.now(),
                         date_updated=datetime.now(),
                         date_signed=datetime.now(),
@@ -48,8 +48,9 @@ with Session(engine) as session:
 
     crud = CRUD(engine, session)
     crud.create_user(user)
-    crud.create_contract(contract)
-    user.contracts.append(contract)
+    # crud.create_contract(contract)
+    users_to_contracts.contract = contract
+    user.contracts.append(users_to_contracts)
     session.commit()
     ret = crud.get_user(user.id)
     print(ret)
