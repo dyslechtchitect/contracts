@@ -1,21 +1,15 @@
 from typing import List
 from typing import Optional
 from sqlalchemy import ForeignKey, Column,Table, Boolean
-from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.mysql import BINARY
-from sqlalchemy.types import TypeDecorator
 from custom_types.guid import UUID
 from typing import Any
 from datetime import datetime
-from flask import jsonify
 from sqlalchemy.types import JSON
-from sqlalchemy import create_engine
 from sqlalchemy_serializer import SerializerMixin
-import json
 
 class Base(DeclarativeBase, SerializerMixin):
     type_annotation_map = {
