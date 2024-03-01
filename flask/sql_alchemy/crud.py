@@ -17,7 +17,7 @@ class CRUD:
 
     def create_user(self, user: User):
         self.session.add(user)
-        self.session.commit()
+
 
 
     def get_user(self, user_id: UUID()):
@@ -35,16 +35,35 @@ class CRUD:
                                               is_editor=is_editor)
         users_to_contracts.contract = contract
         user.contracts.append(users_to_contracts)
+        print("what?")
+
+    def list_contracts(self, user_id: UUID()):
+        return self.session.query(Contract.id)\
+        .join(UsersToContracts, UsersToContracts.user_id == user_id)\
+        .all()
+    def get_contract(self, contract_id: UUID()):
+        query = select(Contract).where(Contract.id == contract_id)
+        return self.session.scalars(query).one()
+
 
     def create_contract_without_user(self, contract: Contract):
         self.session.add(contract)
-        self.session.commit()
+
 
 with Session(engine) as session:
     user = User(
         id=uuid.uuid4().bytes,
         name="ron",
         email="ron.neuman@gmail.com",
+        data={"foo": "bar"},
+        date_created=datetime.now(),
+        date_updated=datetime.now()
+    )
+
+    another_user = User(
+        id=uuid.uuid4().bytes,
+        name="bon",
+        email="bon.neuman@gmail.com",
         data={"foo": "bar"},
         date_created=datetime.now(),
         date_updated=datetime.now()
@@ -58,7 +77,7 @@ with Session(engine) as session:
                         date_expires=datetime.now()
                         )
     another_contract = Contract(id=uuid.uuid4().bytes,
-                        data={"contract": ["foo"]},
+                        data={"contract2": ["foo"]},
                         date_created=datetime.now(),
                         date_updated=datetime.now(),
                         date_signed=datetime.now(),
@@ -67,8 +86,17 @@ with Session(engine) as session:
 
     crud = CRUD(engine, session)
     crud.create_user(user)
+    crud.create_user(another_user)
 
     crud.create_contract(user, contract, True, False, False)
-    ret = crud.get_user(user.id)
-    print(ret)
+    crud.create_contract(another_user, contract, False, False, True)
+
     crud.create_contract_without_user(another_contract) # checking if i can create a contract on it's own
+    ret = crud.get_user(another_user.id)
+    print(ret)
+    contract_ids = crud.list_contracts(user.id)
+    print(contract_ids)
+    for c in contract_ids:
+        for id in c:
+            print(crud.get_contract(id))
+    session.commit()

@@ -1,6 +1,7 @@
+import json
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey, Column,Table, Boolean
+from sqlalchemy import ForeignKey, Column, Table, Boolean
 from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -10,6 +11,7 @@ from typing import Any
 from datetime import datetime
 from sqlalchemy.types import JSON
 from sqlalchemy_serializer import SerializerMixin
+
 
 class Base(DeclarativeBase, SerializerMixin):
     type_annotation_map = {
@@ -28,6 +30,7 @@ class UsersToContracts(Base):
     user: Mapped["User"] = relationship(back_populates="contracts")
     contract: Mapped["Contract"] = relationship(back_populates="users")
 
+
 class User(Base):
     __tablename__ = "user"
     id = Column(UUID(), primary_key=True)
@@ -39,8 +42,10 @@ class User(Base):
     )
     date_created: Mapped[datetime]
     date_updated: Mapped[datetime]
+
     def __repr__(self) -> str:
         return f"""{self.id}"""
+
 
 class Contract(Base):
     __tablename__ = "contract"
@@ -54,6 +59,8 @@ class Contract(Base):
     date_updated: Mapped[datetime]
     date_signed: Mapped[datetime]
     date_expires: Mapped[datetime]
-    def __repr__(self) -> str:
-        return f"""{self.id}"""
 
+    def __repr__(self) -> str:
+        return json.dumps({
+            "id": str(self.id),
+            "data": self.data})
