@@ -45,12 +45,20 @@ with Session(engine) as session:
                         date_signed=datetime.now(),
                         date_expires=datetime.now()
                         )
+    another_contract = Contract(id=uuid.uuid4().bytes,
+                        data={"contract": ["foo"]},
+                        date_created=datetime.now(),
+                        date_updated=datetime.now(),
+                        date_signed=datetime.now(),
+                        date_expires=datetime.now()
+                        )
 
     crud = CRUD(engine, session)
     crud.create_user(user)
-    # crud.create_contract(contract)
+
     users_to_contracts.contract = contract
     user.contracts.append(users_to_contracts)
     session.commit()
     ret = crud.get_user(user.id)
     print(ret)
+    crud.create_contract(another_contract) # checking if i can create a contract on it's own
