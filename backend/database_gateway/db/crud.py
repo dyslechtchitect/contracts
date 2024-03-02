@@ -1,8 +1,8 @@
 from sqlalchemy import select, Boolean
 from sqlalchemy.orm import Session
 
-from custom_types.guid import UUID
-from models import User, Contract, UsersToContracts
+from .custom_types.guid import UUID
+from .models import User, Contract, UsersToContracts
 
 
 class CRUD:

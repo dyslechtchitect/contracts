@@ -6,7 +6,7 @@ from sqlalchemy.orm import DeclarativeBase, relationship
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-from custom_types.guid import UUID
+from .custom_types.guid import UUID
 from typing import Any
 from datetime import datetime
 from sqlalchemy.types import JSON
