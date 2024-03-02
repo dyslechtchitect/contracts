@@ -1,13 +1,18 @@
 # configuration
 from flask import Flask
-from flask_cognito import cognito_auth_required, current_user, current_cognito_jwt
+from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask import jsonify
 from flask_cognito import CognitoAuth
+from sqlalchemy import create_engine
+
+from db.models import Base
+from db.crud import CRUD
+from dto import UserDto
 
 app = Flask(__name__)
 # initialize extension
 
-# cogauth = CognitoAuth(app)
+
 
 app.config.update({
     'COGNITO_REGION': 'eu-north-1',
@@ -20,14 +25,28 @@ app.config.update({
     'COGNITO_JWT_HEADER_PREFIX': 'Bearer',
     'AWS_COGNITO_REDIRECT_URL' : 'http://localhost:5000/postlogin'
 })
-CognitoAuth(app)
+
+cogauth = CognitoAuth(app)
+engine = create_engine('sqlite:///db.db')  # connect to server
+Base.metadata.create_all(engine)
+crud = CRUD(engine)
+
 
 @app.route('/access')
 @cognito_auth_required
-def api_private():
+def create_user():
     # user must have valid cognito access or ID token in header
     # (accessToken is recommended - not as much personal information contained inside as with idToken)
+    user = UserDto(id=current_cognito_jwt['sub'],
+                   name=current_cognito_jwt['cognito:username'],
+                   email=current_cognito_jwt['email'],
+                   data={}
+                   )
+    crud.create_user(user)
     return jsonify({
         'cognito_sub': str(current_cognito_jwt['sub']),  # from cognito pool
         'jwt': str(current_cognito_jwt),  # from your database
     })
+
+
+
