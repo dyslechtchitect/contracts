@@ -2,6 +2,7 @@ from datetime import datetime
 from db.crud import CRUD
 
 from db.models import User, Contract
+from db import script
 from dataclasses import dataclass
 import uuid
 @dataclass
@@ -53,6 +54,6 @@ class DbAdapter:
 
         return self.create_contract(share_with, contract, is_creator, is_editor, is_party)
 
-
+script()
 
 

@@ -2,13 +2,13 @@ from sqlalchemy import create_engine, select, Boolean
 from sqlalchemy.orm import Session
 import uuid
 from datetime import datetime
-from custom_types.guid import UUID
-from models import User, Base, Contract, UsersToContracts
+from db.custom_types.guid import UUID
+from db.models import User, Base, Contract, UsersToContracts
 
 engine = create_engine('sqlite:///db.db')  # connect to server
 
 Base.metadata.create_all(engine)
-from crud import CRUD
+from db.crud import CRUD
 with Session(engine) as session:
     user = User(
         id=uuid.uuid4().bytes,

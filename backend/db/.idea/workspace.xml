@@ -5,6 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0cb1e132-6c16-458e-91d5-536644c310a8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db.db" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db/crud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../database_gateway/db_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db_adapter.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
