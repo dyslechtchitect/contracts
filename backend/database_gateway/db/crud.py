@@ -1,6 +1,7 @@
-from sqlalchemy import select, Boolean
+import uuid
+
+from sqlalchemy import select, Boolean, func
 from sqlalchemy.orm import Session
-from db.custom_types.guid import UUID
 from db.models import User, Contract, UsersToContracts
 from dto import UserDto, ContractDto
 
@@ -16,10 +17,15 @@ class CRUD:
             session.commit()
             return ret
 
-    def get_user(self, user_id: UUID):
+    def get_user(self, user_id: str) -> User:
+        result: User
+
         with Session(self.engine) as session:
             query = select(User).where(User.id == user_id)
-            return session.scalars(query).one()
+            print(f"fetching {str(user_id)}")
+            result = session.scalars(query).one_or_none()
+        return result
+
 
     def create_contract(self,
                         user_dto: UserDto,
@@ -27,21 +33,25 @@ class CRUD:
                         is_creator: Boolean,
                         is_editor: Boolean,
                         is_party: Boolean):
-        with Session(self.engine) as _:
+        with Session(self.engine) as session:
             user = user_dto.as_sql_alchemy()
             users_to_contracts = UsersToContracts(is_creator=is_creator,
                                                   is_party=is_party,
                                                   is_editor=is_editor)
-            users_to_contracts.contract = contract_dto.as_sql_alchemy()
-            user.contracts.append(users_to_contracts)
 
-    def list_contracts(self, user_id: UUID):
+            users_to_contracts.contract = contract_dto.as_sql_alchemy()
+            session.add(contract_dto.as_sql_alchemy())
+            user.contracts.append(users_to_contracts)
+            session.commit()
+
+
+    def list_contracts(self, user_id: str):
         with Session(self.engine) as session:
             return session.query(Contract.id) \
                 .join(UsersToContracts, UsersToContracts.user_id == user_id) \
                 .all()
 
-    def get_contract(self, contract_id: UUID):
+    def get_contract(self, contract_id: str):
         with Session(self.engine) as session:
             query = select(Contract).where(Contract.id == contract_id)
             return session.scalars(query).one()

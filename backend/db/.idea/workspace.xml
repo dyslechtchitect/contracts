@@ -5,6 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0cb1e132-6c16-458e-91d5-536644c310a8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../database_gateway/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db/crud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/custom_types/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/custom_types/guid.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/db_adapter.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/db_adapter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/dto.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/dto.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../database_gateway/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/../database_gateway/server.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -15,22 +23,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2d8UJumONNYeFq5o4pBm6lrqviv" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/ron/Documents/git/contracts/backend/database_gateway"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/ron/Documents/git/contracts/backend/database_gateway&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>

@@ -1,12 +1,11 @@
 import json
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey, Column, Table, Boolean
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy import ForeignKey, Column, Boolean, String
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-from db.custom_types.guid import UUID
 from typing import Any
 from datetime import datetime
 from sqlalchemy.types import JSON
@@ -22,8 +21,8 @@ class Base(DeclarativeBase, SerializerMixin):
 class UsersToContracts(Base):
     __tablename__ = 'users_to_contracts'
 
-    user_id: Mapped[UUID] = mapped_column(ForeignKey('user.id'), primary_key=True)
-    contract_id: Mapped[UUID] = mapped_column(ForeignKey('contract.id'), primary_key=True)
+    user_id: Mapped[String] = mapped_column(ForeignKey('user.id'), primary_key=True)
+    contract_id: Mapped[String] = mapped_column(ForeignKey('contract.id'), primary_key=True)
     is_creator = Column(Boolean)
     is_editor = Column(Boolean)
     is_party = Column(Boolean)
@@ -33,7 +32,7 @@ class UsersToContracts(Base):
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(UUID, primary_key=True)
+    id = Column(String, primary_key=True)
     name: Mapped[Optional[str]]
     email: Mapped[Optional[str]]
     data: Mapped[dict[str, Any]]
@@ -57,7 +56,7 @@ class User(Base):
 
 class Contract(Base):
     __tablename__ = "contract"
-    id = Column(UUID, primary_key=True)
+    id = Column(String, primary_key=True)
     data: Mapped[dict[str, Any]]
     users: Mapped[List["UsersToContracts"]] = relationship(
         back_populates="contract"

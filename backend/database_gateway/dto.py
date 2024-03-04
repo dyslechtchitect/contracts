@@ -15,12 +15,22 @@ class UserDto:
     date_updated: datetime = datetime.now()
 
     def as_sql_alchemy(self):
-        return User(id=uuid.UUID(self.id).bytes,
+        return User(id=self.id,
                     name=self.name,
                     email=self.email,
                     data=self.data,
                     date_created=self.date_created,
                     date_updated=self.date_updated)
+
+    @staticmethod
+    def from_sql_alchemy(user: User):
+        if user:
+            return UserDto(id=user.id,
+                           name=user.name,
+                           email=user.email,
+                           data=user.data,
+                           date_created=user.date_created,
+                           date_updated=user.date_updated)
 
 
 @dataclass
@@ -33,7 +43,7 @@ class ContractDto:
     date_expires: datetime = datetime(year=datetime.now().year + 1, month=datetime.now().month, day=datetime.now().day)
 
     def as_sql_alchemy(self):
-        return Contract(id=uuid.UUID(self.id).bytes,
+        return Contract(id=self.id,
                         data=self.data,
                         date_created=self.date_created,
                         date_updated=self.date_updated,

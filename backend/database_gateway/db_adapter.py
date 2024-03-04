@@ -9,20 +9,22 @@ class DbAdapter:
 
     def create_user(self,
                     user_Dto: UserDto):
-        user = user_Dto.as_sql_alchemy()
-        return self.crud.create_user(user)
+        return self.crud.create_user(user_Dto)
+
+    def get_user(self, user_id: str):
+        user = self.crud.get_user(user_id)
+        return UserDto.from_sql_alchemy(user)
 
     def create_contract(self,
-                        user_dto: UserDto,
+                        user_id: str,
                         contract_dto: ContractDto,
                         is_creator=True,
                         is_editor=True,
                         is_party=False):
-        user = user_dto.as_sql_alchemy()
-        contract = contract_dto.as_sql_alchemy()
+        user_dto = self.get_user(user_id)
 
-        return self.crud.create_contract(user,
-                                         contract,
+        return self.crud.create_contract(user_dto,
+                                         contract_dto,
                                          is_creator=is_creator,
                                          is_editor=is_editor,
                                          is_party=is_party)
