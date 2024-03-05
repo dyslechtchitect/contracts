@@ -34,6 +34,7 @@ class UserDto:
 
 @dataclass
 class ContractRelationshipDto:
+    user_id: str
     is_creator: bool
     is_editor: bool
     is_party: bool
@@ -67,7 +68,10 @@ class ContractDto:
                                date_updated=contract.date_updated,
                                date_signed=contract.date_signed,
                                date_expires=contract.date_expires,
-                               relationships=[asdict(ContractRelationshipDto(u.is_creator, u.is_editor, u.is_party)) for u in contract.users])
+                               relationships=[asdict(ContractRelationshipDto(user_id=u.user_id,
+                                                                             is_creator=u.is_creator,
+                                                                             is_editor=u.is_editor,
+                                                                             is_party=u.is_party)) for u in contract.users])
 
     def as_json(self):
         return json.dumps({
