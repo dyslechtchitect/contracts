@@ -41,7 +41,7 @@ class ContractRelationshipDto:
 
     @staticmethod
     def empty():
-        return ContractRelationshipDto(False, False, False)
+        return ContractRelationshipDto(None, False, False, False)
 @dataclass
 class ContractDto:
     id: str
