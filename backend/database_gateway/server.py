@@ -1,5 +1,5 @@
 # configuration
-
+import json
 import uuid
 from flask import Flask, session, request, redirect, url_for
 from flask_cognito import cognito_auth_required, current_cognito_jwt
@@ -71,6 +71,14 @@ def create_contract():
     user_id = current_cognito_jwt['sub']
     db_adapter.create_contract(user_id, contract_dto)
     return contract_id
+
+@app.route('/user/contracts')
+@cognito_auth_required
+def list_contracts():
+    json_dict = request.get_json()
+    user_id = current_cognito_jwt['sub']
+    ids = db_adapter.list_contracts(user_id)
+    return json.dumps(ids)
 
 
 @app.route("/login")

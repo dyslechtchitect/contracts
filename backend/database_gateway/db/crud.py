@@ -45,16 +45,16 @@ class CRUD:
             session.commit()
 
     def list_contracts(self, user_id: str):
-        contract_dtos: list[ContractDto]
+        contract_ids: list[str]
         with Session(self.engine) as session:
             query = self._list_contracts_stmt(session, user_id)
             contracts = query.all()
-            contract_dtos = [ContractDto.from_sql_alchemy(contract) for contract in contracts]
+            contract_ids = [row.contract_id for row in contracts]
             session.commit()
-        return contract_dtos
+        return contract_ids
 
     def _list_contracts_stmt(self, session, user_id: str):
-        return session.query(Contract.id).join(UsersToContracts, UsersToContracts.user_id == user_id)
+        return session.query(UsersToContracts.contract_id).where(UsersToContracts.user_id == user_id)
 
     def get_contract(self, contract_id: str) -> ContractDto:
         contract_dto: ContractDto
@@ -73,7 +73,5 @@ class CRUD:
             session.add(contract)
             session.commit()
 
-
-
     def _one_or_none(self, session, stmt):
-        return session.scalars(stmt)._one_or_none()
+        return session.scalars(stmt).one_or_none()
