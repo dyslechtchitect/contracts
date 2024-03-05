@@ -56,17 +56,19 @@ class CRUD:
     def _list_contracts_stmt(self, session, user_id: str):
         return session.query(UsersToContracts.contract_id).where(UsersToContracts.user_id == user_id)
 
-    def get_contract(self, contract_id: str) -> ContractDto:
+    def get_contract(self, user_id: str, contract_id: str) -> ContractDto:
         contract_dto: ContractDto
         with Session(self.engine) as session:
-            stmt = self._get_contract_stmt(contract_id)
+            stmt = self._get_contract_stmt(user_id, contract_id)
             contract = self._one_or_none(session, stmt)
             contract_dto = ContractDto.from_sql_alchemy(contract)
 
         return contract_dto
 
-    def _get_contract_stmt(self, contract_id: str):
-        return select(Contract).where(Contract.id == contract_id)
+    def _get_contract_stmt(self, user_id: str, contract_id: str):
+        return select(Contract)\
+                .join(UsersToContracts, UsersToContracts.contract_id == contract_id) \
+                .join(User, User.id == user_id)
 
     def create_contract_without_user(self, contract: Contract):
         with Session(self.engine) as session:

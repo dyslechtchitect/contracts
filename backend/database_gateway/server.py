@@ -72,6 +72,14 @@ def create_contract():
     db_adapter.create_contract(user_id, contract_dto)
     return contract_id
 
+
+@app.route('/contract/<contract_id>')
+@cognito_auth_required
+def get_contract(contract_id):
+    user_id = current_cognito_jwt['sub']
+    contract_dto = db_adapter.get_contract(user_id, contract_id)
+    return json.dumps(**contract_dto)
+
 @app.route('/user/contracts')
 @cognito_auth_required
 def list_contracts():

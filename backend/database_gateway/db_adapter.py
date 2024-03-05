@@ -29,6 +29,9 @@ class DbAdapter:
                                          is_editor=is_editor,
                                          is_party=is_party)
 
+    def get_contract(self, user_id: str, contract_id: str) -> ContractDto:
+        return self.crud.get_contract(user_id, contract_id)
+
     def list_contracts(self, user_id: str) -> list[ContractDto]:
         return self.crud.list_contracts(user_id)
 
