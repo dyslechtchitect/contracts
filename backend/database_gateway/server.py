@@ -78,7 +78,8 @@ def create_contract():
 def get_contract(contract_id):
     user_id = current_cognito_jwt['sub']
     contract_dto = db_adapter.get_contract(user_id, contract_id)
-    return json.dumps(**contract_dto)
+    return contract_dto.as_json()
+
 
 @app.route('/user/contracts')
 @cognito_auth_required
@@ -154,6 +155,7 @@ def missing_group_error_handler(err):
     # Register an error handler if the user hits an "@auth_required" route
     # but is not in all of groups specified
     return jsonify("Group membership does not allow access to this resource"), 403
+
 
 if __name__ == '__main__':
     app.run(debug=True)

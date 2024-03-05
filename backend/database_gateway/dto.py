@@ -1,4 +1,4 @@
-import uuid
+import json
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -59,3 +59,13 @@ class ContractDto:
                                date_updated=contract.date_updated,
                                date_signed=contract.date_signed,
                                date_expires=contract.date_expires)
+
+    def as_json(self):
+        return json.dumps({
+            'id': self.id,
+            'data': self.data,
+            'date_created': str(self.date_created),
+            'date_updated': str(self.date_updated),
+            'date_signed': str(self.date_signed),
+            'date_expires': str(self.date_expires)
+        })
