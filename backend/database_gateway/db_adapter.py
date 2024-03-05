@@ -21,9 +21,9 @@ class DbAdapter:
                         is_creator=True,
                         is_editor=True,
                         is_party=False):
-        user_dto = self.get_user(user_id)
 
-        return self.crud.create_contract(user_dto,
+
+        return self.crud.create_contract(user_id,
                                          contract_dto,
                                          is_creator=is_creator,
                                          is_editor=is_editor,

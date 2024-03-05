@@ -32,7 +32,7 @@ class UsersToContracts(Base):
 
 class User(Base):
     __tablename__ = "user"
-    id = Column(String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[Optional[str]]
     email: Mapped[Optional[str]]
     data: Mapped[dict[str, Any]]
@@ -56,7 +56,7 @@ class User(Base):
 
 class Contract(Base):
     __tablename__ = "contract"
-    id = Column(String, primary_key=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
     data: Mapped[dict[str, Any]]
     users: Mapped[List["UsersToContracts"]] = relationship(
         back_populates="contract"

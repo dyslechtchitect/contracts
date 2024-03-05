@@ -49,3 +49,13 @@ class ContractDto:
                         date_updated=self.date_updated,
                         date_signed=self.date_signed,
                         date_expires=self.date_expires)
+
+    @staticmethod
+    def from_sql_alchemy(contract: Contract):
+        if contract:
+            return ContractDto(id=contract.id,
+                               data=contract.data,
+                               date_created=contract.date_created,
+                               date_updated=contract.date_updated,
+                               date_signed=contract.date_signed,
+                               date_expires=contract.date_expires)
