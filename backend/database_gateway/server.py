@@ -84,7 +84,6 @@ def get_contract(contract_id):
 @app.route('/user/contracts')
 @cognito_auth_required
 def list_contracts():
-    json_dict = request.get_json()
     user_id = current_cognito_jwt['sub']
     ids = db_adapter.list_contracts(user_id)
     return json.dumps(ids)

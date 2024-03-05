@@ -1,5 +1,5 @@
 from sqlalchemy import select, Boolean
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from db.models import User, Contract, UsersToContracts
 from dto import UserDto, ContractDto
 
@@ -67,6 +67,7 @@ class CRUD:
     def _get_contract_stmt(self, session, user_id: str, contract_id: str):
         return (session.query(Contract).\
             join(UsersToContracts, UsersToContracts.contract_id == contract_id).\
+            options(joinedload(Contract.users)).\
             join(User, UsersToContracts.user_id == user_id).\
             filter(User.id == user_id)). \
             limit(1)
