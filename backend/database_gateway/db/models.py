@@ -1,7 +1,7 @@
 import json
 from typing import List
 from typing import Optional
-from sqlalchemy import ForeignKey, Column, Boolean, String
+from sqlalchemy import ForeignKey, Column, Boolean, String, DateTime
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -26,6 +26,8 @@ class UsersToContracts(Base):
     is_creator = Column(Boolean)
     is_editor = Column(Boolean)
     is_party = Column(Boolean)
+    is_signed = Column(Boolean)
+    date_signed = Column(DateTime, nullable=True, default=None)
     user: Mapped["User"] = relationship(back_populates="contracts")
     contract: Mapped["Contract"] = relationship(back_populates="users")
 

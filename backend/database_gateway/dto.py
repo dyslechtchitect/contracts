@@ -38,10 +38,12 @@ class ContractRelationshipDto:
     is_creator: bool
     is_editor: bool
     is_party: bool
+    is_signed: bool
+    date_signed: datetime
 
     @staticmethod
     def empty():
-        return ContractRelationshipDto(None, False, False, False)
+        return ContractRelationshipDto(None, False, False, False, False, None)
 @dataclass
 class ContractDto:
     id: str
@@ -71,7 +73,9 @@ class ContractDto:
                                relationships=[asdict(ContractRelationshipDto(user_id=u.user_id,
                                                                              is_creator=u.is_creator,
                                                                              is_editor=u.is_editor,
-                                                                             is_party=u.is_party)) for u in contract.users])
+                                                                             is_party=u.is_party,
+                                                                             is_signed=u.is_signed,
+                                                                             date_signed=str(u.date_signed))) for u in contract.users])
 
     def as_json(self):
         return json.dumps({

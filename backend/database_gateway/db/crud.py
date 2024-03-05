@@ -37,7 +37,9 @@ class CRUD:
             user = self._one_or_none(session, user_stmt)
             users_to_contracts = UsersToContracts(is_creator=is_creator,
                                                   is_party=is_party,
-                                                  is_editor=is_editor)
+                                                  is_editor=is_editor,
+                                                  is_signed=False,
+                                                  date_signed=None)
 
             users_to_contracts.contract = contract_dto.as_sql_alchemy()
             user.contracts.append(users_to_contracts)
