@@ -6,10 +6,10 @@ from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask import jsonify
 from flask_cognito import CognitoAuth
 from sqlalchemy import create_engine
-from db_adapter import DbAdapter
+from adapters.db_adapter import DbAdapter
 from config import Config
 from db.models import Base
-from db.crud import CRUD
+from db.crud.crud import CRUD
 from dto import UserDto, ContractDto
 from flask_cognito_lib import CognitoAuth as CognitoLibAuth
 from flask_cognito_lib.decorators import (

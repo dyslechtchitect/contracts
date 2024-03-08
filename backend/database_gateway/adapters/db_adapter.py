@@ -1,4 +1,4 @@
-from db.crud import CRUD
+from db.crud.crud import CRUD
 
 from dto import UserDto, ContractDto
 
