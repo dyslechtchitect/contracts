@@ -60,6 +60,14 @@ def create_user():
     return user_id
 
 
+@app.route('/user')
+@cognito_auth_required
+def get_user():
+    user_id = current_cognito_jwt['sub']
+
+    return db_adapter.get_user(user_id).as_json()
+
+
 @app.route('/contract', methods=['POST'])
 @cognito_auth_required
 def create_contract():

@@ -11,7 +11,7 @@ class DbAdapter:
                     user_Dto: UserDto):
         return self.crud.create_user(user_Dto)
 
-    def get_user(self, user_id: str):
+    def get_user(self, user_id: str) -> UserDto:
         return self.crud.get_user(user_id)
 
     def create_contract(self,

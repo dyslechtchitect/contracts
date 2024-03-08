@@ -32,6 +32,16 @@ class UserDto:
                            date_created=user.date_created,
                            date_updated=user.date_updated)
 
+    def as_json(self):
+        return json.dumps({
+            'id': self.id,
+            'name': self.name,
+            'email': self.email,
+            'data': self.data,
+            'date_created': str(self.date_created),
+            'date_updated': str(self.date_updated),
+        })
+
 @dataclass
 class ContractRelationshipDto:
     user_id: str
