@@ -55,10 +55,12 @@ class CRUD:
                                 guest_email: str,
                                 contract_id: str):
         shared_contract_dto: ContractDto
+        existing_contract = self.get_contract(owner_id, contract_id)
         with Session(self.engine) as session:
             guest_user_stmt = self._get_user_by_email_stmt(guest_email)
             guest_user = self._one_or_none(session, guest_user_stmt)
-
+            if self._contract_already_assigned_to_user_stmt(session, contract_id, guest_user.id):
+                return existing_contract
             users_to_contracts = UsersToContracts(
                 user_id=guest_user.id,
                 contract_id=contract_id,
@@ -68,7 +70,7 @@ class CRUD:
                 is_signed=False,
                 date_signed=None)
             session.add(users_to_contracts)
-            shared_contract_stmt = self._get_contract_stmt(session, contract_id)
+            shared_contract_stmt = self._get_contract_stmt(session, owner_id, contract_id)
             shared_contract: Contract = self._one_or_none(session, shared_contract_stmt)
             shared_contract_dto = ContractDto.from_sql_alchemy(shared_contract)
             session.commit()
@@ -83,6 +85,10 @@ class CRUD:
             contract_ids = [row.contract_id for row in contracts]
             session.commit()
         return contract_ids
+
+    def _contract_already_assigned_to_user_stmt(self, session, contract_id: str, user_id: str):
+        return (session.query(1)
+                .where(UsersToContracts.user_id == user_id and UsersToContracts.user_id == user_id))
 
     def _list_contracts_stmt(self, session, user_id: str):
         return session.query(UsersToContracts.contract_id).where(UsersToContracts.user_id == user_id)

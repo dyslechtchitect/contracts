@@ -96,7 +96,11 @@ def share_contract(contract_id):
     print(email)
     print(user_id)
     contract_dto = db_adapter.share_contract(user_id, email, contract_id)
-    return contract_dto.as_json()
+    if contract_dto:
+        return contract_dto.as_json()
+    else:
+        return None
+
 
 @app.route('/user/contracts')
 @cognito_auth_required
