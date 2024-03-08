@@ -68,7 +68,7 @@ class CRUD:
                 is_signed=False,
                 date_signed=None)
             session.add(users_to_contracts)
-            shared_contract_stmt = self._get_contract_with_all_users_stmt(session, contract_id)
+            shared_contract_stmt = self._get_contract_stmt(session, contract_id)
             shared_contract: Contract = self._one_or_none(session, shared_contract_stmt)
             shared_contract_dto = ContractDto.from_sql_alchemy(shared_contract)
             session.commit()
@@ -88,13 +88,10 @@ class CRUD:
         return session.query(UsersToContracts.contract_id).where(UsersToContracts.user_id == user_id)
 
     def get_contract(self, user_id: str, contract_id: str) -> Optional[ContractDto]:
-        if self.get_user(user_id) == None:
-            return None
-
         contract_dto: ContractDto
         with Session(self.engine) as session:
 
-            stmt = self._get_contract_with_all_users_stmt(session, contract_id)
+            stmt = self._get_contract_stmt(session, user_id, contract_id)
             contract = self._one_or_none(session, stmt)
             contract_dto = ContractDto.from_sql_alchemy(contract)
             session.commit()
@@ -104,16 +101,9 @@ class CRUD:
         return (session.query(Contract). \
                 join(UsersToContracts, UsersToContracts.contract_id == contract_id). \
                 options(joinedload(Contract.users)). \
-                join(User, UsersToContracts.user_id == user_id). \
-                filter(User.id == user_id)). \
-            limit(1)
-
-    def _get_contract_with_all_users_stmt(self, session, contract_id: str):
-        return (session.query(Contract). \
-                join(UsersToContracts, UsersToContracts.contract_id == contract_id). \
-                options(joinedload(Contract.users)). \
+                outerjoin(User, UsersToContracts.user_id == user_id). \
                 filter(Contract.id == contract_id)). \
-            limit(1)
+                limit(1)
 
     def create_contract_without_user(self, contract: Contract):
         with Session(self.engine) as session:
