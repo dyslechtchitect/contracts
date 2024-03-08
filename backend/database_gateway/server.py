@@ -27,9 +27,9 @@ import boto3
 boto_client = boto3.client('cognito-idp', Config.AWS_REGION)
 app = Flask(__name__)
 app.config.from_object(Config)
-flask_coginto = CognitoAuth(app)
 cognito_lib_auth = CognitoLibAuth(app)
-# cogauth = CognitoAuth(app)
+flask_coginto = CognitoAuth(app)
+
 engine = create_engine('sqlite:///db.db')  # connect to server
 Base.metadata.create_all(engine)
 crud = CRUD(engine)
@@ -73,6 +73,12 @@ def create_contract():
     return contract_id
 
 
+@app.route('/token')
+@cognito_auth_required
+def get_token():
+    return str(current_cognito_jwt)
+
+
 @app.route('/contract/<contract_id>')
 @cognito_auth_required
 def get_contract(contract_id):
@@ -80,6 +86,17 @@ def get_contract(contract_id):
     contract_dto = db_adapter.get_contract(user_id, contract_id)
     return contract_dto.as_json()
 
+
+@app.route('/contract/<contract_id>', methods=['POST'])
+@cognito_auth_required
+def share_contract(contract_id):
+    user_id = current_cognito_jwt['sub']
+    json_dict = request.get_json()
+    email = json_dict["email"]
+    print(email)
+    print(user_id)
+    contract_dto = db_adapter.share_contract(user_id, email, contract_id)
+    return contract_dto.as_json()
 
 @app.route('/user/contracts')
 @cognito_auth_required

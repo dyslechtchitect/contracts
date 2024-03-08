@@ -26,6 +26,9 @@ class CRUD:
     def _get_user_stmt(self, user_id: str):
         return select(User).where(User.id == user_id)
 
+    def _get_user_by_email_stmt(self, user_email: str):
+        return select(User).where(User.email == user_email)
+
     def create_contract(self,
                         user_id: str,
                         contract_dto: ContractDto,
@@ -45,6 +48,30 @@ class CRUD:
             user.contracts.append(users_to_contracts)
             session.commit()
 
+    def share_contract_by_email(self,
+                                owner_id: str,
+                                guest_email: str,
+                                contract_id: str):
+        shared_contract_dto: ContractDto
+        with Session(self.engine) as session:
+            guest_user_stmt = self._get_user_by_email_stmt(guest_email)
+            guest_user = self._one_or_none(session, guest_user_stmt)
+
+            users_to_contracts = UsersToContracts(
+                user_id=guest_user.id,
+                contract_id=contract_id,
+                is_creator=False,
+                is_party=False,
+                is_editor=False,
+                is_signed=False,
+                date_signed=None)
+            session.add(users_to_contracts)
+            shared_contract_stmt = self._get_contract_with_all_users_stmt(session, contract_id)
+            shared_contract: Contract = self._one_or_none(session, shared_contract_stmt)
+            shared_contract_dto = ContractDto.from_sql_alchemy(shared_contract)
+
+        return shared_contract_dto
+
     def list_contracts(self, user_id: str):
         contract_ids: list[str]
         with Session(self.engine) as session:
@@ -63,17 +90,23 @@ class CRUD:
             stmt = self._get_contract_stmt(session, user_id, contract_id)
             contract = self._one_or_none(session, stmt)
             contract_dto = ContractDto.from_sql_alchemy(contract)
-
+            session.commit()
         return contract_dto
 
     def _get_contract_stmt(self, session, user_id: str, contract_id: str):
-        return (session.query(Contract).\
-            join(UsersToContracts, UsersToContracts.contract_id == contract_id).\
-            options(joinedload(Contract.users)).\
-            join(User, UsersToContracts.user_id == user_id).\
-            filter(User.id == user_id)). \
+        return (session.query(Contract). \
+                join(UsersToContracts, UsersToContracts.contract_id == contract_id). \
+                options(joinedload(Contract.users)). \
+                join(User, UsersToContracts.user_id == user_id). \
+                filter(User.id == user_id)). \
             limit(1)
 
+    def _get_contract_with_all_users_stmt(self, session, contract_id: str):
+        return (session.query(Contract). \
+                join(UsersToContracts, UsersToContracts.contract_id == contract_id). \
+                options(joinedload(Contract.users)). \
+                filter(Contract.id == contract_id)). \
+            limit(1)
 
     def create_contract_without_user(self, contract: Contract):
         with Session(self.engine) as session:
