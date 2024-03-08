@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import select, Boolean
 from sqlalchemy.orm import Session, joinedload
 from db.models import User, Contract, UsersToContracts
@@ -69,6 +71,7 @@ class CRUD:
             shared_contract_stmt = self._get_contract_with_all_users_stmt(session, contract_id)
             shared_contract: Contract = self._one_or_none(session, shared_contract_stmt)
             shared_contract_dto = ContractDto.from_sql_alchemy(shared_contract)
+            session.commit()
 
         return shared_contract_dto
 
@@ -84,10 +87,14 @@ class CRUD:
     def _list_contracts_stmt(self, session, user_id: str):
         return session.query(UsersToContracts.contract_id).where(UsersToContracts.user_id == user_id)
 
-    def get_contract(self, user_id: str, contract_id: str) -> ContractDto:
+    def get_contract(self, user_id: str, contract_id: str) -> Optional[ContractDto]:
+        if self.get_user(user_id) == None:
+            return None
+
         contract_dto: ContractDto
         with Session(self.engine) as session:
-            stmt = self._get_contract_stmt(session, user_id, contract_id)
+
+            stmt = self._get_contract_with_all_users_stmt(session, contract_id)
             contract = self._one_or_none(session, stmt)
             contract_dto = ContractDto.from_sql_alchemy(contract)
             session.commit()
