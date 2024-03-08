@@ -12,8 +12,7 @@ class DbAdapter:
         return self.crud.create_user(user_Dto)
 
     def get_user(self, user_id: str):
-        user = self.crud.get_user(user_id)
-        return UserDto.from_sql_alchemy(user)
+        return self.crud.get_user(user_id)
 
     def create_contract(self,
                         user_id: str,

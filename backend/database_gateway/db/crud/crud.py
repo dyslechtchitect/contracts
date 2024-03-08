@@ -18,12 +18,12 @@ class CRUD:
             session.add(user_dto.as_sql_alchemy())
             session.commit()
 
-    def get_user(self, user_id: str) -> User:
-        result = None
+    def get_user(self, user_id: str) -> UserDto:
+        result: User
         with Session(self.engine) as session:
             stmt = get_user_stmt(user_id)
             result = self._one_or_none(session, stmt)
-        return result
+        return UserDto.from_sql_alchemy(result)
 
     def create_contract(self,
                         user_id: str,
