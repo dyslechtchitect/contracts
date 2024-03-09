@@ -1,16 +1,21 @@
 # configuration
 import json
 import uuid
+
+from botocore.client import BaseClient
 from flask import Flask, session, request, redirect, url_for
 from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask import jsonify
 from flask_cognito import CognitoAuth
 from sqlalchemy import create_engine
+
+from adapters.boto_adapter import BotoAdapter
 from adapters.db_adapter import DbAdapter
 from config import Config
+from contracts_app import ContractsApp
 from db.models import Base
 from db.crud.crud import CRUD
-from dto import UserDto, ContractDto
+from dto import ContractDto
 from flask_cognito_lib import CognitoAuth as CognitoLibAuth
 from flask_cognito_lib.decorators import (
     auth_required,
@@ -24,7 +29,7 @@ from flask_cognito_lib.exceptions import (
 )
 import boto3
 
-boto_client = boto3.client('cognito-idp', Config.AWS_REGION)
+boto_client: BaseClient = boto3.client('cognito-idp', Config.AWS_REGION)
 app = Flask(__name__)
 app.config.from_object(Config)
 cognito_lib_auth = CognitoLibAuth(app)
@@ -34,30 +39,18 @@ engine = create_engine('sqlite:///db.db')  # connect to server
 Base.metadata.create_all(engine)
 crud = CRUD(engine)
 db_adapter = DbAdapter(crud)
+boto_adapter = BotoAdapter(boto_client)
+contracts_app = ContractsApp(db_adapter, boto_adapter)
 
 
 @app.route('/user', methods=['POST'])
 @cognito_auth_required
 def create_user():
     # this route works with flask-cognito jwt - no session cookie available
-    user_data = boto_client.admin_get_user(UserPoolId=Config.AWS_COGNITO_USER_POOL_ID,
-                                           Username=current_cognito_jwt['username'])
-
-    user_attributes = user_data["UserAttributes"]
-    user_dict = {attr["Name"]: attr["Value"] for attr in user_attributes}
     user_id = current_cognito_jwt['sub']
-    user = UserDto(id=user_id,
-                   name=user_dict['name'],
-                   email=user_dict['email'],
-                   data={}
-                   )
-    existing_user = db_adapter.get_user(user_id)
-    if existing_user:
-        pass
-    else:
-        db_adapter.create_user(user)
+    username = current_cognito_jwt['username']
 
-    return user_id
+    return contracts_app.create_user(user_id, username)
 
 
 @app.route('/user')
@@ -65,20 +58,16 @@ def create_user():
 def get_user():
     user_id = current_cognito_jwt['sub']
 
-    return db_adapter.get_user(user_id).as_json()
+    return contracts_app.get_user(user_id).as_json()
 
 
 @app.route('/contract', methods=['POST'])
 @cognito_auth_required
 def create_contract():
     json_dict = request.get_json()
-
-    contract_id = str(uuid.uuid4())
-    contract_dto = ContractDto(id=contract_id,
-                               **json_dict)
     user_id = current_cognito_jwt['sub']
-    db_adapter.create_contract(user_id, contract_dto)
-    return contract_id
+    contract_id = contracts_app.create_contract(user_id, json_dict)
+    return {'contract_id': contract_id}
 
 
 @app.route('/token')
@@ -91,8 +80,8 @@ def get_token():
 @cognito_auth_required
 def get_contract(contract_id):
     user_id = current_cognito_jwt['sub']
-    contract_dto = db_adapter.get_contract(user_id, contract_id)
-    return contract_dto.as_json()
+    dto = contracts_app.get_contract(user_id, contract_id)
+    return dto.as_json() if dto else None
 
 
 @app.route('/contract/<contract_id>', methods=['POST'])
@@ -101,20 +90,15 @@ def share_contract(contract_id):
     user_id = current_cognito_jwt['sub']
     json_dict = request.get_json()
     email = json_dict["email"]
-    print(email)
-    print(user_id)
-    contract_dto = db_adapter.share_contract(user_id, email, contract_id)
-    if contract_dto:
-        return contract_dto.as_json()
-    else:
-        return None
+    dto = contracts_app.share_contract(user_id, email, contract_id)
+    return dto.as_json() if dto else None
 
 
 @app.route('/user/contracts')
 @cognito_auth_required
 def list_contracts():
     user_id = current_cognito_jwt['sub']
-    ids = db_adapter.list_contracts(user_id)
+    ids = contracts_app.list_contracts(user_id)
     return json.dumps(ids)
 
 
