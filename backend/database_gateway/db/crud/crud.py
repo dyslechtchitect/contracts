@@ -15,7 +15,8 @@ class CRUD:
 
     def create_user(self, user_dto: UserDto):
         with Session(self.engine) as session:
-            session.add(user_dto.as_sql_alchemy())
+            user = user_dto.as_sql_alchemy()
+            session.add(user)
             session.commit()
 
     def get_user(self, user_id: str) -> UserDto:
