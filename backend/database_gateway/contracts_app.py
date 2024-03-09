@@ -12,10 +12,10 @@ class ContractsApp:
         self.db_adapter = db_adapter
         self.boto_adapter = boto_adapter
 
-    def _get_user_data(self, user_id: str,
-                       username: str):
+    def get_user_data(self,
+                      username: str):
         user_dict = self.boto_adapter.get_user_data(username)
-        return UserDto(id=user_id,
+        return UserDto(id=user_dict['sub'],
                        name=user_dict['name'],
                        email=user_dict['email'],
                        data={})
@@ -26,7 +26,7 @@ class ContractsApp:
             print("already existing")
             return existing_user.id
         else:
-            user_dto: UserDto = self._get_user_data(user_id, username)
+            user_dto: UserDto = self.get_user_data(username)
             self.db_adapter.create_user(user_dto)
             return user_id
 
