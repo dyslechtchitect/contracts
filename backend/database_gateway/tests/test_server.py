@@ -1,58 +1,77 @@
-import json
+import unittest
 import uuid
 from unittest.mock import patch, MagicMock
-from flask import Flask, current_app
-import pytest
-from sqlalchemy import create_engine
+from datetime import datetime
+import json
 
+from flask import Flask
+from sqlalchemy import create_engine
+from werkzeug.datastructures import ImmutableMultiDict
+
+from contracts_app import ContractsApp
+from server import ContractsServer
 from adapters.boto_adapter import BotoAdapter
 from adapters.db_adapter import DbAdapter
-from contracts_app import ContractsApp
+from dto import UserDto
+from db.models import Base, User
 from db.crud.crud import CRUD
-from db.models import Base
-from server import ContractsServer
 
 
-@pytest.fixture
-def app():
-    app = Flask(__name__)
-    return app
+class TestCreateUser(unittest.TestCase):
+    def setUp(self):
+        # Create a Flask app and configure it
+        self.app = Flask(__name__)
+        self.app.testing = True
 
+        # Create an in-memory SQLite database
+        self.engine = create_engine('sqlite:///:memory:')
+        Base.metadata.create_all(self.engine)
+        self.crud = CRUD(self.engine)
 
+        # Create mock BotoAdapter
+        self.boto_adapter = MagicMock(spec=BotoAdapter)
+        self.boto_adapter.get_user_data.return_value = {
+            'sub': 'test_user_id',
+            'name': 'Test User',
+            'email': 'test@example.com'
+        }
 
-mock_boto_adapter = MagicMock(spec=BotoAdapter)
+        # Create the ContractsApp instance
+        self.db_adapter = DbAdapter(self.crud)
+        self.contracts_app = ContractsApp(self.db_adapter, self.boto_adapter)
 
-@pytest.fixture
-def contracts_app(app):
-    engine = create_engine('sqlite:///:memory:', echo=False)
-    Base.metadata.create_all(engine)
-    crud = CRUD(engine)
-    db_adapter = DbAdapter(crud)
-    return ContractsApp(db_adapter, mock_boto_adapter)
+        # Create a test client
+        self.client = self.app.test_client()
 
+        # Create the ContractsServer instance
+        self.server = ContractsServer(self.app, self.contracts_app)
 
-@pytest.fixture
-def client(app, contracts_app):
-    with app.test_request_context():
-        yield ContractsServer(app, contracts_app)
-
-
-def test_create_user(client):
-    with patch('server.cognito_auth_required', MagicMock(return_value=lambda x: x)):
+    def test_create_user(self):
+        # Mock authentication decorator
+        auth_decorator = MagicMock()
+        auth_decorator.return_value = lambda func: func
         expected_user_id = str(uuid.uuid4())
-        expected_response = {"user_id": expected_user_id, "username": "test_username"}
-        given_boto_Returns(expected_user_id, "username", "user@email.com")
-        # Mock current_cognito_jwt
-        current_cognito_jwt = {'sub': expected_user_id, 'username': 'test_username'}
+        with patch('server.current_cognito_jwt', {'sub': expected_user_id, 'username': 'test_username'}), \
+             self.app.test_request_context():
+            # Mock cognito_auth extension and add it to the Flask application context
+            self.app.extensions = {'cognito_auth': MagicMock(get_token=MagicMock(return_value="mock_token"))}
 
-        # Mock current_app.extensions['cognito_auth']
-        current_app.extensions = {'cognito_auth': MagicMock(get_token=MagicMock(return_value="mock_token"))}
+            with patch('server.cognito_auth_required', auth_decorator):
+                # Make a POST request to create a user
+                response = self.client.post('/user')
 
-        with patch('server.current_cognito_jwt', current_cognito_jwt):
-            # Adjusted call with appropriate arguments
-            response_id = client._contracts_app.create_user(expected_user_id, "test_username")
+                # Assert that the BotoAdapter's get_user_data method is called with the correct username
+                self.boto_adapter.get_user_data.assert_called_once_with('test_username')
 
-        assert response_id == expected_user_id
+                # Assert the status code and response data
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(expected_user_id, str(response.data.decode()))
 
-def given_boto_Returns(user_id:str, username: str, email: str):
-    mock_boto_adapter.get_user_data.return_value = {'sub': user_id, 'name': username, 'email': email, 'data': {}}
+
+    def tearDown(self):
+        # Clean up the database session and connections
+        self.engine.dispose()
+
+
+if __name__ == '__main__':
+    unittest.main()
