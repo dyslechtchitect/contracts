@@ -1,22 +1,9 @@
 # configuration
 import json
-import uuid
 
-from botocore.client import BaseClient
 from flask import Flask, session, request, redirect, url_for
-from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask import jsonify
-from flask_cognito import CognitoAuth
-from sqlalchemy import create_engine
-
-from adapters.boto_adapter import BotoAdapter
-from adapters.db_adapter import DbAdapter
-from config import Config
-from contracts_app import ContractsApp
-from db.models import Base
-from db.crud.crud import CRUD
-from dto import ContractDto
-from flask_cognito_lib import CognitoAuth as CognitoLibAuth
+from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask_cognito_lib.decorators import (
     auth_required,
     cognito_login,
@@ -27,6 +14,9 @@ from flask_cognito_lib.exceptions import (
     AuthorisationRequiredError,
     CognitoGroupRequiredError,
 )
+
+from contracts_app import ContractsApp
+
 
 class ContractsServer:
 
