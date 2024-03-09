@@ -1,3 +1,4 @@
+import json
 import unittest
 
 from sqlalchemy import create_engine
@@ -27,11 +28,6 @@ class TestCreateUser(unittest.TestCase):
 
         # Create mock BotoAdapter
         self.boto_adapter = MagicMock(spec=BotoAdapter)
-        self.boto_adapter.get_user_data.return_value = {
-            'sub': 'test_user_id',
-            'name': 'Test User',
-            'email': 'test@example.com'
-        }
 
         # Create the ContractsApp instance
         self.db_adapter = DbAdapter(self.crud)
@@ -43,11 +39,18 @@ class TestCreateUser(unittest.TestCase):
         # Create the ContractsServer instance
         self.server = ContractsServer(self.app, self.contracts_app)
 
+    def given_boto_returns(self, user_id: str, name='Test User', email='test@example.com'):
+        self.boto_adapter.get_user_data.return_value = {
+            'sub': user_id,
+            'name': name,
+            'email': email
+        }
+
     @with_server_context
     def test_create_user(self, expected_user_id):
         # Make a POST request to create a user
+        self.given_boto_returns(expected_user_id)
         response = self.client.post('/user')
-
         # Assert that the BotoAdapter's get_user_data method is called with the correct username
         self.boto_adapter.get_user_data.assert_called_once_with('test_username')
 
@@ -56,7 +59,26 @@ class TestCreateUser(unittest.TestCase):
         # Assert that the response data matches the expected user ID
         self.assertEqual(expected_user_id, response.data.decode())
 
+    @with_server_context
+    def test_get_user(self, expected_user_id):
+        # Make a POST request to create a user
+        self.given_boto_returns(expected_user_id)
+        response_create_user = self.client.post('/user')
 
+        # Assert that the BotoAdapter's get_user_data method is called with the correct username
+        self.boto_adapter.get_user_data.assert_called_once_with('test_username')
+
+        # Assert the status code of the response for creating user
+        self.assertEqual(response_create_user.status_code, 200)
+
+        # Make a GET request to fetch user data
+        response_get_user = self.client.get('/user')
+
+        # Assert the status code of the response for getting user data
+        self.assertEqual(response_get_user.status_code, 200)
+
+        # Assert that the response data contains the expected user ID
+        self.assertEqual(expected_user_id, json.loads(response_get_user.data.decode())['id'])
     def tearDown(self):
         # Clean up the database session and connections
         self.engine.dispose()
