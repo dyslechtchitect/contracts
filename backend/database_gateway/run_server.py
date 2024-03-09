@@ -21,7 +21,7 @@ app.config.from_object(Config)
 cognito_lib_auth = CognitoLibAuth(app)
 flask_coginto = CognitoAuth(app)
 
-engine = create_engine('sqlite:///db.db')  # connect to server
+engine = create_engine(f'sqlite:///{Config.DB_NAME}.db')  # connect to server
 Base.metadata.create_all(engine)
 crud = CRUD(engine)
 db_adapter = DbAdapter(crud)

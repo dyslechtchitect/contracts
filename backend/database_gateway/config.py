@@ -22,3 +22,4 @@ class Config:
     AWS_COGNITO_REDIRECT_URL = 'http://localhost:5000/postlogin'
     AWS_COGNITO_COOKIE_AGE_SECONDS = 3600
     AWS_COGNITO_LOGOUT_URL = "http://localhost:5000/postlogout"
+    DB_NAME = 'db'
