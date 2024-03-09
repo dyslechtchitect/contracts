@@ -45,7 +45,11 @@ class TestCreateUser(unittest.TestCase):
             'name': name,
             'email': email
         }
-
+    def given_user(self, user_id: str):
+        self.given_boto_returns(user_id)
+        response = self.client.post('/user')
+        # Assert the status code of the response for creating user
+        self.assertEqual(response.status_code, 200)
     @with_server_context
     def test_create_user(self, expected_user_id):
         # Make a POST request to create a user
@@ -62,14 +66,10 @@ class TestCreateUser(unittest.TestCase):
     @with_server_context
     def test_get_user(self, expected_user_id):
         # Make a POST request to create a user
-        self.given_boto_returns(expected_user_id)
-        response_create_user = self.client.post('/user')
+        self.given_user(expected_user_id)
 
         # Assert that the BotoAdapter's get_user_data method is called with the correct username
         self.boto_adapter.get_user_data.assert_called_once_with('test_username')
-
-        # Assert the status code of the response for creating user
-        self.assertEqual(response_create_user.status_code, 200)
 
         # Make a GET request to fetch user data
         response_get_user = self.client.get('/user')
