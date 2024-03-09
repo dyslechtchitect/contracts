@@ -49,6 +49,8 @@ class ContractsServer:
 
     @cognito_auth_required
     def create_user(self):
+
+        print('was here')
         # this route works with flask-cognito jwt - no session cookie available
         user_id = current_cognito_jwt['sub']
         username = current_cognito_jwt['username']

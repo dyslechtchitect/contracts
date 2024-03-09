@@ -21,6 +21,7 @@ class ContractsApp:
                        data={})
 
     def create_user(self, user_id: str, username: str) -> Optional[str]:
+        print("\nwas in contracts_app")
         existing_user = self.db_adapter.get_user(user_id)
         if existing_user:
             print("already existing")

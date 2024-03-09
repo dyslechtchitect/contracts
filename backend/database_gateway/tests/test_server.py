@@ -1,70 +1,43 @@
-import unittest
-from functools import wraps
-from importlib import reload
-from unittest.mock import patch
-
+import json
+import uuid
+from unittest.mock import patch, MagicMock
+from flask import Flask, current_app
 import pytest
 
-import contracts_app
-import run_server
-import server
-from contracts_app import ContractsApp
+from server import ContractsServer
 
 
-def setUpModule():
-    """
-    Patches out the decorator (in the library) and reloads the module
-    under test.
-    """
-    patch('flask_cognito.cognito_auth_required', mock_cognito_auth_required).start()
-    reload(server)
-
-
-@pytest.fixture()
+@pytest.fixture
 def app():
-    with run_server.Boiler.app.app_context():
-        app_ = run_server.Boiler.app
-        app_.config.update({
-            "TESTING": True,
-        })
-
-    yield app_
+    app = Flask(__name__)
+    return app
 
 
-@pytest.fixture()
-def client(app):
-    return app.test_client()
+@pytest.fixture
+def contracts_app(app):
+    return MagicMock()
 
 
-@pytest.fixture()
-def runner(app):
-    return app.test_cli_runner()
+@pytest.fixture
+def client(app, contracts_app):
+    with app.test_request_context():
+        yield ContractsServer(app, contracts_app)
 
 
-patch('server.current_cognito_jwt')
+def test_create_user(client):
+    with patch('server.cognito_auth_required', MagicMock(return_value=lambda x: x)):
+        expected_user_id = uuid.uuid4()
+        expected_response = {"user_id": expected_user_id, "username": "test_username"}
+        client._contracts_app.create_user.return_value = expected_response
 
+        # Mock current_cognito_jwt
+        current_cognito_jwt = {'sub': expected_user_id, 'username': 'test_username'}
 
-def mock_cognito_auth_required(fn):
-    """
-    This is a dummy wrapper of @cognito auth required, it passes-through
-    to the
-    wrapped fuction without performing any cognito logic.
+        # Mock current_app.extensions['cognito_auth']
+        current_app.extensions = {'cognito_auth': MagicMock(get_token=MagicMock(return_value="mock_token"))}
 
-    """
+        with patch('server.current_cognito_jwt', current_cognito_jwt):
+            response_dict = client.create_user()
 
-    @wraps(fn)
-    def decorator(*args, **kwargs):
-        return fn(*args, **kwargs)
-
-    return decorator
-
-
-@patch('server.current_cognito_jwt')
-class TestContractApp(unittest.TestCase):
-    def test_my_example_function(self, mock_current_cognito_jwt):
-        mock_current_cognito_jwt.__getitem__.return_value = 'test'
-        response = server.ContractsServer.create_user()
-        self.assertEqual(response, {'your_sub': 'test'})
-
-
-
+        assert response_dict == expected_response
+        client._contracts_app.create_user.assert_called_once_with(expected_user_id, "test_username")
