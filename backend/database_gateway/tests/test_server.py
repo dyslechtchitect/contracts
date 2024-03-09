@@ -39,17 +39,23 @@ class TestCreateUser(unittest.TestCase):
         # Create the ContractsServer instance
         self.server = ContractsServer(self.app, self.contracts_app)
 
+    def tearDown(self):
+        # Clean up the database session and connections
+        self.engine.dispose()
+
     def given_boto_returns(self, user_id: str, name='Test User', email='test@example.com'):
         self.boto_adapter.get_user_data.return_value = {
             'sub': user_id,
             'name': name,
             'email': email
         }
+
     def given_user(self, user_id: str):
         self.given_boto_returns(user_id)
         response = self.client.post('/user')
         # Assert the status code of the response for creating user
         self.assertEqual(response.status_code, 200)
+
     @with_server_context
     def test_create_user(self, expected_user_id):
         # Make a POST request to create a user
@@ -79,9 +85,21 @@ class TestCreateUser(unittest.TestCase):
 
         # Assert that the response data contains the expected user ID
         self.assertEqual(expected_user_id, json.loads(response_get_user.data.decode())['id'])
-    def tearDown(self):
-        # Clean up the database session and connections
-        self.engine.dispose()
+
+    @with_server_context
+    def test_create_contract(self, expected_user_id):
+        # Make a POST request to create a user
+        self.given_user(expected_user_id)
+        response = self.client.post('/contract', json={
+            "name": "Test Contract",
+            "start_date": "2024-03-09",
+            "end_date": "2024-03-10",
+            "terms": {
+                "payment_terms": "Net 30",
+                "delivery_terms": "FOB Destination"
+            }
+        })
+        self.assertEqual(json.loads(response.data.decode()), "1")
 
 
 if __name__ == '__main__':

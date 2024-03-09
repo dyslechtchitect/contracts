@@ -68,7 +68,7 @@ class ContractsServer:
         json_dict = request.get_json()
         user_id = current_cognito_jwt['sub']
         contract_id = self._contracts_app.create_contract(user_id, json_dict)
-        return {'contract_id': contract_id}
+        return json.dumps({'contract_id': contract_id})
 
     @cognito_auth_required
     def get_token(self):
