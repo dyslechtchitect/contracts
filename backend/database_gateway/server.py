@@ -96,8 +96,7 @@ class ContractsServer:
     def list_contracts(self):
         user_id = current_cognito_jwt['sub']
         ids = self._contracts_app.list_contracts(user_id)
-
-        return Response(json.dumps(ids), status=200, mimetype='application/json')
+        return json.dumps(ids)
 
     @cognito_login
     def login(self):

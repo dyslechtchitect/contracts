@@ -50,8 +50,7 @@ class TestCreateUser(unittest.TestCase):
             'email': email
         }
 
-    @with_server_context
-    def given_user(self, user_id: str, expected_user_email: str):
+    def given_user(self, user_id: str):
         self.given_boto_returns(user_id)
         response = self.client.post('/user')
         # Assert the status code of the response for creating user
@@ -65,7 +64,7 @@ class TestCreateUser(unittest.TestCase):
         return json.loads(create_response.data.decode())['contract_id']
 
     @with_server_context
-    def test_create_user(self, expected_user_id, _):
+    def test_create_user(self, expected_user_id):
         # Make a POST request to create a user
         self.given_boto_returns(expected_user_id)
         response = self.client.post('/user')
@@ -78,7 +77,7 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(expected_user_id, response.data.decode())
 
     @with_server_context
-    def test_get_user(self, expected_user_id, _):
+    def test_get_user(self, expected_user_id):
         # Make a POST request to create a user
         self.given_user(expected_user_id)
 
@@ -95,7 +94,7 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(expected_user_id, json.loads(response_get_user.data.decode())['id'])
 
     @with_server_context
-    def test_create_contract(self, expected_user_id, _):
+    def test_create_contract(self, expected_user_id):
         # Make a POST request to create a user
         self.given_user(expected_user_id)
         response = self.client.post('/contract', json={
@@ -108,7 +107,7 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
     @with_server_context
-    def test_get_contract(self, expected_user_id, _):
+    def test_get_contract(self, expected_user_id):
         # Make a POST request to create a user
         expected_data = {
             "payment_terms": "Net 30",
@@ -138,14 +137,14 @@ class TestCreateUser(unittest.TestCase):
 
 
     @with_server_context
-    def test_list_contracts(self, expected_user_id, _email, *args):
+    def test_list_contracts(self, expected_user_id):
         # Make a POST request to create a user
         expected_data = {
             "payment_terms": "Net 30",
             "delivery_terms": "FOB Destination"
         }
 
-        self.given_user(expected_user_id, _email)
+        self.given_user(expected_user_id)
         contract_id_1 = self.given_contract(expected_data)
         contract_id_2 = self.given_contract(expected_data)
         expected_ids = [contract_id_1, contract_id_2]
