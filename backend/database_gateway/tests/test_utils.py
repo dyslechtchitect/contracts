@@ -4,7 +4,7 @@ from random import random
 from unittest.mock import MagicMock, patch
 
 
-def with_server_context(test_func):
+def with_user_auth_context(test_func):
     @wraps(test_func)
     def wrapper(self, *args, **kwargs):
         # Mock authentication decorator

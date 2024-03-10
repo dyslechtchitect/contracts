@@ -25,7 +25,7 @@ class ContractsServer:
                  contracts_app: ContractsApp
                  ):
         self.app = app
-        self._contracts_app = contracts_app
+        self.contracts_app = contracts_app
         self._init_rules()
         self._init_error_handlers()
 
@@ -55,19 +55,19 @@ class ContractsServer:
         user_id = current_cognito_jwt['sub']
         username = current_cognito_jwt['username']
 
-        return self._contracts_app.create_user(user_id, username)
+        return self.contracts_app.create_user(user_id, username)
 
     @cognito_auth_required
     def get_user(self):
         user_id = current_cognito_jwt['sub']
 
-        return self._contracts_app.get_user(user_id).as_json()
+        return self.contracts_app.get_user(user_id).as_json()
 
     @cognito_auth_required
     def create_contract(self):
         json_dict = request.get_json()
         user_id = current_cognito_jwt['sub']
-        contract_id = self._contracts_app.create_contract(user_id, json_dict)
+        contract_id = self.contracts_app.create_contract(user_id, json_dict)
 
         return Response(json.dumps({'contract_id': contract_id}), status=201, mimetype='application/json')
 
@@ -78,7 +78,7 @@ class ContractsServer:
     @cognito_auth_required
     def get_contract(self, contract_id):
         user_id = current_cognito_jwt['sub']
-        dto = self._contracts_app.get_contract(user_id, contract_id)
+        dto = self.contracts_app.get_contract(user_id, contract_id)
         body = dto.as_json() if dto else None
 
         return  Response(body, status=200, mimetype='application/json')
@@ -88,14 +88,14 @@ class ContractsServer:
         user_id = current_cognito_jwt['sub']
         json_dict = request.get_json()
         email = json_dict["email"]
-        dto = self._contracts_app.share_contract(user_id, email, contract_id)
+        dto = self.contracts_app.share_contract(user_id, email, contract_id)
         return dto.as_json() if dto else None
 
 
     @cognito_auth_required
     def list_contracts(self):
         user_id = current_cognito_jwt['sub']
-        ids = self._contracts_app.list_contracts(user_id)
+        ids = self.contracts_app.list_contracts(user_id)
         return json.dumps(ids)
 
     @cognito_login
@@ -131,7 +131,7 @@ class ContractsServer:
         raw_accessToken = request.cookies['cognito_access_token']
         raw_claims = session["claims"]
         user_name = raw_claims['username']
-        user_data = self._contracts_app.get_user_data( user_name)
+        user_data = self.contracts_app.get_user_data(user_name)
         return jsonify({
             "claims": raw_claims,
             "user_name": user_name,

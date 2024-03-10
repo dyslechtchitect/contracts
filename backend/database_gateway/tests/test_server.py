@@ -1,9 +1,12 @@
 import json
 import unittest
+import uuid
+from random import random
 
 from sqlalchemy import create_engine
 
 from contracts_app import ContractsApp
+from dto import UserDto
 from server import ContractsServer
 from adapters.boto_adapter import BotoAdapter
 from adapters.db_adapter import DbAdapter
@@ -12,7 +15,7 @@ from db.crud.crud import CRUD
 from flask import Flask
 from unittest.mock import MagicMock
 
-from tests.test_utils import with_server_context
+from tests.test_utils import with_user_auth_context
 
 
 class TestCreateUser(unittest.TestCase):
@@ -56,6 +59,9 @@ class TestCreateUser(unittest.TestCase):
         # Assert the status code of the response for creating user
         self.assertEqual(response.status_code, 200)
 
+    def given_user_in_db(self, user_dto: UserDto):
+        self.contracts_app.db_adapter.create_user(user_dto)
+
     def given_contract(self, data: dict) -> str:
         create_response = self.client.post('/contract', json={
             "data": data
@@ -63,7 +69,16 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(create_response.status_code, 201)
         return json.loads(create_response.data.decode())['contract_id']
 
-    @with_server_context
+    def given_contract_in_db(self, user_id: str, data: dict) -> str:
+        contract_id = self.contracts_app.create_contract(user_id, data)
+        return contract_id
+
+    def match_contracts_ignoring_date(self, contract_a: dict, contract_b: dict):
+        contract_a_filtered = {k: v for k, v in contract_a.items() if "date" not in k}
+        contract_b_filtered = {k: v for k, v in contract_b.items() if "date" not in k}
+        self.assertEqual(contract_a_filtered, contract_b_filtered)
+
+    @with_user_auth_context
     def test_create_user(self, expected_user_id):
         # Make a POST request to create a user
         self.given_boto_returns(expected_user_id)
@@ -76,13 +91,12 @@ class TestCreateUser(unittest.TestCase):
         # Assert that the response data matches the expected user ID
         self.assertEqual(expected_user_id, response.data.decode())
 
-    @with_server_context
+    @with_user_auth_context
     def test_get_user(self, expected_user_id):
         # Make a POST request to create a user
-        self.given_user(expected_user_id)
-
-        # Assert that the BotoAdapter's get_user_data method is called with the correct username
-        self.boto_adapter.get_user_data.assert_called_once_with('test_username')
+        username = 'test_username'
+        expected_user = UserDto(expected_user_id, username, "test_user@email.com", {str(random()): str(random())})
+        self.given_user_in_db(expected_user)
 
         # Make a GET request to fetch user data
         response_get_user = self.client.get('/user')
@@ -91,12 +105,14 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(response_get_user.status_code, 200)
 
         # Assert that the response data contains the expected user ID
-        self.assertEqual(expected_user_id, json.loads(response_get_user.data.decode())['id'])
+        self.assertEqual(json.loads(expected_user.as_json()), json.loads(response_get_user.data.decode()))
 
-    @with_server_context
+    @with_user_auth_context
     def test_create_contract(self, expected_user_id):
         # Make a POST request to create a user
-        self.given_user(expected_user_id)
+        expected_user = UserDto(expected_user_id, "test_username", "test_user@email.com",
+                                {str(random()): str(random())})
+        self.given_user_in_db(expected_user)
         response = self.client.post('/contract', json={
             "data": {
                 "payment_terms": "Net 30",
@@ -106,12 +122,12 @@ class TestCreateUser(unittest.TestCase):
         # Assert the status code of the response for getting user data
         self.assertEqual(response.status_code, 201)
 
-    @with_server_context
+    @with_user_auth_context
     def test_get_contract(self, expected_user_id):
         # Make a POST request to create a user
-        expected_data = {
+        expected_data = {'data': {
             "payment_terms": "Net 30",
-            "delivery_terms": "FOB Destination"
+            "delivery_terms": "FOB Destination"}
         }
 
         expected_relationship = {
@@ -123,30 +139,38 @@ class TestCreateUser(unittest.TestCase):
             "date_signed": 'None'
         }
 
-        self.given_user(expected_user_id)
-        contract_id = self.given_contract(expected_data)
+        expected_user = UserDto(expected_user_id, "test_username", "test_user@email.com",
+                                {str(random()): str(random())})
+        self.given_user_in_db(expected_user)
+
+        contract_id = self.given_contract_in_db(expected_user_id, expected_data)
+        expected_contract = {
+            'id': contract_id,
+            'data': expected_data['data'],
+            'relationships': [expected_relationship]
+        }
         # Assert the status code of the response for getting user data
         response = self.client.get(f'/contract/{contract_id}')
 
-        actual_data = json.loads(response.data.decode())['data']
-        actual_relationship = json.loads(response.data.decode())['relationships'][0]
+        actual_contract = json.loads(response.data.decode())
 
-        self.assertEqual(actual_data, expected_data)
-        self.assertEqual(actual_relationship, expected_relationship)
+        self.match_contracts_ignoring_date(actual_contract, expected_contract)
 
-
-
-    @with_server_context
+    @with_user_auth_context
     def test_list_contracts(self, expected_user_id):
         # Make a POST request to create a user
-        expected_data = {
+        expected_data = {'data': {
             "payment_terms": "Net 30",
-            "delivery_terms": "FOB Destination"
+            "delivery_terms": "FOB Destination"}
         }
 
-        self.given_user(expected_user_id)
-        contract_id_1 = self.given_contract(expected_data)
-        contract_id_2 = self.given_contract(expected_data)
+        expected_user = UserDto(expected_user_id, "test_username", "test_user@email.com",
+                                {str(random()): str(random())})
+        self.given_user_in_db(expected_user)
+
+        contract_id_1 = self.given_contract_in_db(expected_user_id, expected_data)
+        contract_id_2 = self.given_contract_in_db(expected_user_id, expected_data)
+
         expected_ids = [contract_id_1, contract_id_2]
         # Assert the status code of the response for getting user data
         response = self.client.get(f'/user/contracts')
