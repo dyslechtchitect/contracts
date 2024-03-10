@@ -113,15 +113,26 @@ class TestCreateUser(unittest.TestCase):
             "payment_terms": "Net 30",
             "delivery_terms": "FOB Destination"
         }
+
+        expected_relationship = {
+            "user_id": expected_user_id,
+            "is_creator": True,
+            "is_editor": True,
+            "is_party": False,
+            "is_signed": False,
+            "date_signed": 'None'
+        }
+
         self.given_user(expected_user_id)
         contract_id = self.given_contract(expected_data)
         # Assert the status code of the response for getting user data
         response = self.client.get(f'/contract/{contract_id}')
 
         actual_data = json.loads(response.data.decode())['data']
-        actual_user_id = json.loads(response.data.decode())['relationships'][0]['user_id']
-        self.assertEqual(actual_user_id, expected_user_id)
+        actual_relationship = json.loads(response.data.decode())['relationships'][0]
+
         self.assertEqual(actual_data, expected_data)
+        self.assertEqual(actual_relationship, expected_relationship)
 
 
 if __name__ == '__main__':
