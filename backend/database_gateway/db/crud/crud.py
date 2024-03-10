@@ -54,7 +54,8 @@ class CRUD:
         with Session(self.engine) as session:
             guest_user_stmt = get_user_by_email_stmt(guest_email)
             guest_user = self._one_or_none(session, guest_user_stmt)
-            if contract_already_assigned_to_user_stmt(session, contract_id, guest_user.id):
+            already_shared_stmt = contract_already_assigned_to_user_stmt(session, contract_id, guest_user.id)
+            if self._one_or_none(session, already_shared_stmt) is not None:
                 return existing_contract
             users_to_contracts = UsersToContracts(
                 user_id=guest_user.id,

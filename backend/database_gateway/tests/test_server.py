@@ -179,6 +179,57 @@ class TestCreateUser(unittest.TestCase):
 
         self.assertCountEqual(actual_ids, expected_ids)
 
+    @with_user_auth_context
+    def test_share_contract(self, expected_user_id):
+        # Make a POST request to create a user
+        guest_user_id = str(uuid.uuid4())
+        expected_data = {'data': {
+            "payment_terms": "Net 30",
+            "delivery_terms": "FOB Destination"}
+        }
+
+        expected_relationships = [{
+            "user_id": expected_user_id,
+            "is_creator": True,
+            "is_editor": True,
+            "is_party": False,
+            "is_signed": False,
+            "date_signed": 'None'},
+            {'date_signed': 'None',
+             'is_creator': False,
+             'is_editor': False,
+             'is_party': False,
+             'is_signed': False,
+             'user_id': guest_user_id}
+        ]
+
+        self.given_user(expected_user_id)
+
+        contract_id = self.given_contract(expected_data['data'])
+
+        expected_contract = {
+            'id': contract_id,
+            'data': expected_data['data'],
+            'relationships': expected_relationships
+        }
+
+        guest_email = f"{random()}@email.com"
+        guest_user = UserDto(guest_user_id, "guest_username", guest_email,
+                             {str(random()): str(random())})
+
+        self.given_user_in_db(guest_user)
+
+        self.client.post(f'/contract/{contract_id}', json={
+            "email": guest_email
+
+        })
+        # Assert the status code of the response for getting user data
+        response = self.client.get(f'/contract/{contract_id}')
+
+        actual_contract = json.loads(response.data.decode())
+
+        self.match_contracts_ignoring_date(actual_contract, expected_contract)
+
 
 if __name__ == '__main__':
     unittest.main()
