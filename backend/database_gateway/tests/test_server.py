@@ -76,6 +76,21 @@ class TestCreateUser(unittest.TestCase):
         contract_b_filtered = {k: v for k, v in contract_b.items() if "date" not in k}
         self.assertEqual(contract_a_filtered, contract_b_filtered)
 
+    def given_share_contract_preconditions(self, expected_user_id):
+        guest_user_id = str(uuid.uuid4())
+        expected_relationships = [
+            {"user_id": expected_user_id, **CREATOR_RELATIONSHIP_DATA},
+            {'user_id': guest_user_id, 'date_signed': 'None', **GUEST_RELATIONSHIP_DATA}
+        ]
+        self.given_user_with_auth_context(expected_user_id)
+        contract_id = self.given_contract_with_auth_context(CONTRACT_DATA)
+        expected_contract = {'id': contract_id, 'data': CONTRACT_DATA, 'relationships': expected_relationships}
+        guest_email = f"{random()}@email.com"
+        guest_user = UserDto(guest_user_id, "guest_username", guest_email, {str(random()): str(random())})
+        self.given_user_in_db(guest_user)
+
+        return guest_user_id, contract_id, guest_email, expected_contract
+
     @with_user_auth_context
     def test_create_user(self, expected_user_id):
         self.given_boto_returns(expected_user_id)
@@ -107,7 +122,7 @@ class TestCreateUser(unittest.TestCase):
         expected_user = UserDto(expected_user_id, TEST_USERNAME, TEST_EMAIL, {str(random()): str(random())})
         self.given_user_in_db(expected_user)
         contract_id = self.given_contract_in_db(expected_user_id, expected_data)
-        expected_contract = {'id': contract_id, 'data': expected_data['data'], 'relationships': [expected_relationship]}
+        expected_contract = {'id': contract_id, 'data': CONTRACT_DATA, 'relationships': [expected_relationship]}
         response = self.client.get(f'/contract/{contract_id}')
         actual_contract = json.loads(response.data.decode())
         self.match_contracts_ignoring_dates(actual_contract, expected_contract)
@@ -126,19 +141,9 @@ class TestCreateUser(unittest.TestCase):
         self.assertCountEqual(actual_ids, expected_ids)
 
     @with_user_auth_context
-    def test_share_contract(self, expected_user_id):
-        guest_user_id = str(uuid.uuid4())
-        expected_data = {'data': CONTRACT_DATA}
-        expected_relationships = [
-            {"user_id": expected_user_id, **CREATOR_RELATIONSHIP_DATA},
-            {'user_id': guest_user_id, 'date_signed': 'None', **GUEST_RELATIONSHIP_DATA}
-        ]
-        self.given_user_with_auth_context(expected_user_id)
-        contract_id = self.given_contract_with_auth_context(expected_data['data'])
-        expected_contract = {'id': contract_id, 'data': expected_data['data'], 'relationships': expected_relationships}
-        guest_email = f"{random()}@email.com"
-        guest_user = UserDto(guest_user_id, "guest_username", guest_email, {str(random()): str(random())})
-        self.given_user_in_db(guest_user)
+    def test_share_contract_by_email(self, expected_user_id):
+        guest_user_id, contract_id, guest_email, expected_contract = self.given_share_contract_preconditions(
+            expected_user_id)
 
         # Share the contract
         share_response = self.client.post(f'/contract/{contract_id}', json={"email": guest_email})
