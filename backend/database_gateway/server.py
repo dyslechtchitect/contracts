@@ -81,7 +81,7 @@ class ContractsServer:
         dto = self.contracts_app.get_contract(user_id, contract_id)
         body = dto.as_json() if dto else None
 
-        return  Response(body, status=200, mimetype='application/json')
+        return Response(body, status=200, mimetype='application/json')
 
     @cognito_auth_required
     def share_contract(self, contract_id):
@@ -89,7 +89,7 @@ class ContractsServer:
         json_dict = request.get_json()
         email = json_dict["email"]
         dto = self.contracts_app.share_contract(user_id, email, contract_id)
-        return dto.as_json() if dto else None
+        return Response(dto.as_json() if dto else None, status=201, mimetype='application/json')
 
 
     @cognito_auth_required
