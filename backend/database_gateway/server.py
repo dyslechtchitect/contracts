@@ -1,7 +1,7 @@
 # configuration
 import json
 
-from flask import Flask, session, request, redirect, url_for
+from flask import Flask, session, request, redirect, url_for, Response
 from flask import jsonify
 from flask_cognito import cognito_auth_required, current_cognito_jwt
 from flask_cognito_lib.decorators import (
@@ -68,7 +68,8 @@ class ContractsServer:
         json_dict = request.get_json()
         user_id = current_cognito_jwt['sub']
         contract_id = self._contracts_app.create_contract(user_id, json_dict)
-        return json.dumps({'contract_id': contract_id})
+
+        return Response(json.dumps({'contract_id': contract_id}), status=201, mimetype='application/json')
 
     @cognito_auth_required
     def get_token(self):
@@ -78,7 +79,9 @@ class ContractsServer:
     def get_contract(self, contract_id):
         user_id = current_cognito_jwt['sub']
         dto = self._contracts_app.get_contract(user_id, contract_id)
-        return dto.as_json() if dto else None
+        body = dto.as_json() if dto else None
+
+        return  Response(body, status=200, mimetype='application/json')
 
     @cognito_auth_required
     def share_contract(self, contract_id):

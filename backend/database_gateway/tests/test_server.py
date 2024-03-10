@@ -91,16 +91,33 @@ class TestCreateUser(unittest.TestCase):
         # Make a POST request to create a user
         self.given_user(expected_user_id)
         response = self.client.post('/contract', json={
-            "name": "Test Contract",
-            "start_date": "2024-03-09",
-            "end_date": "2024-03-10",
-            "terms": {
+            "data": {
                 "payment_terms": "Net 30",
                 "delivery_terms": "FOB Destination"
             }
         })
-        self.assertEqual(json.loads(response.data.decode()), "1")
+        # Assert the status code of the response for getting user data
+        self.assertEqual(response.status_code, 201)
 
+    @with_server_context
+    def test_get_contract(self, expected_user_id):
+        # Make a POST request to create a user
+        expected_data = {
+                "payment_terms": "Net 30",
+                "delivery_terms": "FOB Destination"
+            }
+        self.given_user(expected_user_id)
+        create_response = self.client.post('/contract', json={
+            "data": expected_data
+        })
+        # Assert the status code of the response for getting user data
+        contract_id = json.loads(create_response.data.decode())['contract_id']
+        response = self.client.get(f'/contract/{contract_id}')
+
+        actual_data = json.loads(response.data.decode())['data']
+        actual_user_id = json.loads(response.data.decode())['relationships'][0]['user_id']
+        self.assertEqual(actual_user_id, expected_user_id)
+        self.assertEqual(actual_data, expected_data)
 
 if __name__ == '__main__':
     unittest.main()
