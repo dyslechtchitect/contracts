@@ -42,6 +42,7 @@ class UserDto:
             'date_updated': str(self.date_updated),
         })
 
+
 @dataclass
 class ContractRelationshipDto:
     user_id: str
@@ -54,6 +55,8 @@ class ContractRelationshipDto:
     @staticmethod
     def empty():
         return ContractRelationshipDto(None, False, False, False, False, None)
+
+
 @dataclass
 class ContractDto:
     id: str
@@ -63,6 +66,7 @@ class ContractDto:
     date_signed: datetime = datetime.now()
     date_expires: datetime = datetime(year=datetime.now().year + 1, month=datetime.now().month, day=datetime.now().day)
     relationships: list[ContractRelationshipDto] = ContractRelationshipDto.empty()
+
     def as_sql_alchemy(self):
         return Contract(id=self.id,
                         data=self.data,
@@ -85,7 +89,8 @@ class ContractDto:
                                                                              is_editor=u.is_editor,
                                                                              is_party=u.is_party,
                                                                              is_signed=u.is_signed,
-                                                                             date_signed=str(u.date_signed))) for u in contract.users])
+                                                                             date_signed=str(u.date_signed))) for u in
+                                              contract.users])
 
     def as_json(self):
         return json.dumps({

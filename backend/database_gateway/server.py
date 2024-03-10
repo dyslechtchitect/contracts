@@ -35,7 +35,7 @@ class ContractsServer:
         self.app.add_url_rule('/contract', 'create_contract', self.create_contract, methods=['POST'])
         self.app.add_url_rule('/contract/<contract_id>', 'get_contract', self.get_contract, methods=['GET'])
         self.app.add_url_rule('/contract/<contract_id>', 'share_contract', self.share_contract, methods=['POST'])
-        self.app.add_url_rule('/contract', 'list_contract', self.list_contracts, methods=['GET'])
+        self.app.add_url_rule('/user/contracts', 'list_contract', self.list_contracts, methods=['GET'])
         self.app.add_url_rule('/token', 'token', self.get_token, methods=['GET'])
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET'])
         self.app.add_url_rule('/postlogin', 'post_login', self.post_login, methods=['GET'])
@@ -96,7 +96,8 @@ class ContractsServer:
     def list_contracts(self):
         user_id = current_cognito_jwt['sub']
         ids = self._contracts_app.list_contracts(user_id)
-        return json.dumps(ids)
+
+        return Response(json.dumps(ids), status=200, mimetype='application/json')
 
     @cognito_login
     def login(self):

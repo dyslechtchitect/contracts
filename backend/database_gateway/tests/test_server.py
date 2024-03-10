@@ -135,5 +135,26 @@ class TestCreateUser(unittest.TestCase):
         self.assertEqual(actual_relationship, expected_relationship)
 
 
+
+    @with_server_context
+    def test_list_contracts(self, expected_user_id):
+        # Make a POST request to create a user
+        expected_data = {
+            "payment_terms": "Net 30",
+            "delivery_terms": "FOB Destination"
+        }
+
+        self.given_user(expected_user_id)
+        contract_id_1 = self.given_contract(expected_data)
+        contract_id_2 = self.given_contract(expected_data)
+        expected_ids = [contract_id_1, contract_id_2]
+        # Assert the status code of the response for getting user data
+        response = self.client.get(f'/user/contracts')
+        self.assertEqual(response.status_code, 200)
+        actual_ids = json.loads(response.data.decode())
+
+        self.assertCountEqual(actual_ids, expected_ids)
+
+
 if __name__ == '__main__':
     unittest.main()
